@@ -5,6 +5,7 @@ import { SlideViewer } from '../presentation/SlideViewer';
 import { SAMPLE_SLIDES } from '@/lib/samplePresentation';
 import { EndSessionModal } from './EndSessionModal';
 import { ShareModal } from '../shared/ShareModal';
+import { VoiceControl } from '../shared/VoiceControl';
 import { 
   ChevronLeft, ChevronRight, EyeOff, Maximize, Share2, Trash2, Users, 
   Play, RotateCcw, Keyboard, CheckCircle, Radio, Sparkles
@@ -132,6 +133,9 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
             <Users className="w-4 h-4 text-brand-secondary" />
             <span>👥 {state.viewerCount} Viewers</span>
           </div>
+
+          {/* Real-time Voice Share Widget */}
+          <VoiceControl roomId={state.id} role="ADMIN" />
 
           {/* Requirement 13: Share Button */}
           <button

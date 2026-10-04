@@ -453,6 +453,52 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     if (callback) callback({ success: true });
   });
 
+  // 14. Real-Time WebRTC Voice Signaling Handlers
+  socket.on('sendWebrtcOffer', ({ targetSocketId, sdp, senderRole, nickname }) => {
+    io.to(targetSocketId).emit('webrtcOffer', {
+      senderSocketId: socket.id,
+      sdp,
+      senderRole,
+      nickname,
+    });
+  });
+
+  socket.on('sendWebrtcAnswer', ({ targetSocketId, sdp }) => {
+    io.to(targetSocketId).emit('webrtcAnswer', {
+      senderSocketId: socket.id,
+      sdp,
+    });
+  });
+
+  socket.on('sendWebrtcIceCandidate', ({ targetSocketId, candidate }) => {
+    io.to(targetSocketId).emit('webrtcIceCandidate', {
+      senderSocketId: socket.id,
+      candidate,
+    });
+  });
+
+  socket.on('requestToSpeak', ({ roomId, participantId, nickname }) => {
+    io.to(roomId).emit('speakRequested', {
+      participantId,
+      socketId: socket.id,
+      nickname,
+    });
+  });
+
+  socket.on('grantSpeakPermission', ({ roomId, targetSocketId, allowed, token }) => {
+    if (!verifyAdmin(roomId, token)) return;
+    io.to(targetSocketId).emit('speakPermissionGranted', { allowed });
+  });
+
+  socket.on('toggleAudioMute', ({ roomId, isMuted }) => {
+    io.to(roomId).emit('audioStatusChanged', {
+      socketId: socket.id,
+      isMuted,
+      role: socket.data.role || 'VIEWER',
+      nickname: socket.data.participantId,
+    });
+  });
+
   // 14. Handle Disconnect
   socket.on('disconnect', () => {
     const roomId = socket.data.roomId;

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { SAMPLE_QUIZ_QUESTIONS } from '@/lib/sampleQuiz';
 import { EndSessionModal } from './EndSessionModal';
 import { ShareModal } from '../shared/ShareModal';
+import { VoiceControl } from '../shared/VoiceControl';
 import { 
   Play, ChevronLeft, ChevronRight, Unlock, Lock, Eye, Trophy, Download, 
   Trash2, Share2, Users, Timer, CheckCircle, HelpCircle, BarChart2, Sparkles 
@@ -95,6 +96,9 @@ export const QuizAdminDashboard: React.FC<QuizAdminDashboardProps> = ({
             <Users className="w-4 h-4 text-brand-secondary" />
             <span>👥 {state.participantCount} Participants</span>
           </div>
+
+          {/* Real-time Voice Share Widget */}
+          <VoiceControl roomId={state.id} role="ADMIN" />
 
           <button
             onClick={() => setIsShareOpen(true)}

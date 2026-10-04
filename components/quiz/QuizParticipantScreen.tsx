@@ -7,6 +7,7 @@ import {
   Send, Sparkles, User, Maximize 
 } from 'lucide-react';
 import { PublicQuizState } from '@/types';
+import { VoiceControl } from '../shared/VoiceControl';
 
 interface QuizParticipantScreenProps {
   state: PublicQuizState;
@@ -149,6 +150,15 @@ export const QuizParticipantScreen: React.FC<QuizParticipantScreenProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          {participantId && (
+            <VoiceControl
+              roomId={state.id}
+              role="PARTICIPANT"
+              participantId={participantId}
+              nickname={nickname}
+            />
+          )}
+
           {state.userScore !== undefined && (
             <div className="px-3 py-1 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-mono font-black text-xs border border-purple-200">
               {state.userScore} pts

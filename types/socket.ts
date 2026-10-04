@@ -13,6 +13,14 @@ export interface ServerToClientEvents {
   sessionEnded: (data: { reason: string }) => void;
   error: (data: { message: string; code?: string }) => void;
   authenticated: (data: { success: boolean; token?: string }) => void;
+
+  // Real-Time WebRTC Voice Signaling Events
+  webrtcOffer: (data: { senderSocketId: string; sdp: any; senderRole: string; nickname?: string }) => void;
+  webrtcAnswer: (data: { senderSocketId: string; sdp: any }) => void;
+  webrtcIceCandidate: (data: { senderSocketId: string; candidate: any }) => void;
+  speakRequested: (data: { participantId: string; socketId: string; nickname: string }) => void;
+  speakPermissionGranted: (data: { allowed: boolean }) => void;
+  audioStatusChanged: (data: { socketId: string; isMuted: boolean; role: string; nickname?: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -56,4 +64,12 @@ export interface ClientToServerEvents {
     data: { roomId: string; token: string },
     callback?: (res: { success: boolean; error?: string }) => void
   ) => void;
+
+  // Real-Time WebRTC Voice Signaling Handlers
+  sendWebrtcOffer: (data: { targetSocketId: string; sdp: any; senderRole: string; nickname?: string }) => void;
+  sendWebrtcAnswer: (data: { targetSocketId: string; sdp: any }) => void;
+  sendWebrtcIceCandidate: (data: { targetSocketId: string; candidate: any }) => void;
+  requestToSpeak: (data: { roomId: string; participantId: string; nickname: string }) => void;
+  grantSpeakPermission: (data: { roomId: string; targetSocketId: string; allowed: boolean; token: string }) => void;
+  toggleAudioMute: (data: { roomId: string; isMuted: boolean }) => void;
 }

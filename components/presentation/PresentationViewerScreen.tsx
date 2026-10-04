@@ -4,6 +4,7 @@ import React from 'react';
 import { SlideViewer } from './SlideViewer';
 import { Maximize, Radio } from 'lucide-react';
 import { PublicPresentationState } from '@/types';
+import { VoiceControl } from '../shared/VoiceControl';
 
 interface PresentationViewerScreenProps {
   state: PublicPresentationState;
@@ -42,8 +43,10 @@ export const PresentationViewerScreen: React.FC<PresentationViewerScreenProps> =
           </div>
         </div>
 
-        {/* Status Indicators */}
+        {/* Status Indicators & Voice Control */}
         <div className="flex items-center gap-3">
+          
+          <VoiceControl roomId={state.id} role="VIEWER" />
           
           <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-brand-darkBg text-brand-primary dark:text-brand-light border border-sky-100 dark:border-brand-darkBorder">
             <Radio className="w-3.5 h-3.5 text-brand-secondary animate-pulse" />
