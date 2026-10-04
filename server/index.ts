@@ -7,7 +7,7 @@ import { roomStore } from './stores/RoomStore';
 import { sessionStore } from './stores/SessionStore';
 import { autoCleanupService } from './services/AutoCleanupService';
 import { getPublicRoomState } from './utils/roomStateHelper';
-import { ClientToServerEvents, ServerToClientEvents } from '../types/socket';
+import { ClientToServerEvents, ServerToClientEvents, IceServerConfig } from '../types/socket';
 import { QuizRoom } from '../types';
 
 dotenv.config();
@@ -18,6 +18,28 @@ const server = http.createServer(app);
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const PORT = process.env.PORT || 3001;
 const SYSTEM_ADMIN_PIN = process.env.ADMIN_PIN || 'admin123';
+const MAX_VOICE_PARTICIPANTS = parseInt(process.env.MAX_VOICE_PARTICIPANTS || '10', 10);
+
+// Helper function to build STUN and TURN configuration securely from environment variables
+function getTurnServers(): IceServerConfig[] {
+  const turnUrl = process.env.TURN_SERVER_URL;
+  const turnUsername = process.env.TURN_USERNAME;
+  const turnPassword = process.env.TURN_PASSWORD;
+
+  const servers: IceServerConfig[] = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
+  ];
+
+  if (turnUrl && turnUsername && turnPassword) {
+    servers.push({
+      urls: turnUrl.split(','),
+      username: turnUsername,
+      credential: turnPassword,
+    });
+  }
+
+  return servers;
+}
 
 // Permissive CORS middleware for Express & Vercel Preview Deployments
 app.use(
@@ -80,6 +102,9 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
 
 // Timers map for quiz auto-closing
 const quizTimers: Map<string, NodeJS.Timeout> = new Map();
+
+// Voice Membership Tracking: roomId -> Map<socketId, VoiceUser>
+const voiceRoomUsers: Map<string, Map<string, { socketId: string; role: string; nickname?: string; isMuted: boolean }>> = new Map();
 
 io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
   const clientIp = socket.handshake.address || 'unknown';
@@ -446,6 +471,9 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
       quizTimers.delete(roomId);
     }
 
+    // Clean up voice users for room
+    voiceRoomUsers.delete(roomId);
+
     io.to(roomId).emit('sessionEnded', { reason: 'This session has been ended by the host.' });
     io.in(roomId).socketsLeave(roomId);
     roomStore.deleteRoom(roomId);
@@ -454,6 +482,108 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
   });
 
   // 14. Real-Time WebRTC Voice Signaling Handlers
+  socket.on('voice-join-room', ({ roomId, role, nickname }) => {
+    let roomMap = voiceRoomUsers.get(roomId);
+    if (!roomMap) {
+      roomMap = new Map();
+      voiceRoomUsers.set(roomId, roomMap);
+    }
+
+    if (roomMap.size >= MAX_VOICE_PARTICIPANTS) {
+      socket.emit('error', { message: `Voice capacity is currently full (Max ${MAX_VOICE_PARTICIPANTS} active participants).` });
+      return;
+    }
+
+    roomMap.set(socket.id, {
+      socketId: socket.id,
+      role: role || 'VIEWER',
+      nickname,
+      isMuted: true,
+    });
+
+    const existingUsers = Array.from(roomMap.values())
+      .filter((u) => u.socketId !== socket.id)
+      .map((u) => ({
+        socketId: u.socketId,
+        role: u.role,
+        nickname: u.nickname,
+        isMuted: u.isMuted,
+        isSpeaking: false,
+      }));
+
+    socket.emit('voice-room-users', {
+      users: existingUsers,
+      turnServers: getTurnServers(),
+    });
+
+    socket.to(roomId).emit('voice-user-joined', {
+      socketId: socket.id,
+      role: role || 'VIEWER',
+      nickname,
+    });
+
+    console.log(`🎙️ Voice user joined ${roomId}: ${socket.id} (${nickname || role})`);
+  });
+
+  socket.on('voice-leave-room', ({ roomId }) => {
+    const roomMap = voiceRoomUsers.get(roomId);
+    if (roomMap) {
+      roomMap.delete(socket.id);
+      if (roomMap.size === 0) voiceRoomUsers.delete(roomId);
+    }
+    socket.to(roomId).emit('voice-user-left', { socketId: socket.id });
+  });
+
+  socket.on('voice-offer', ({ targetUserId, offer, senderRole, nickname }) => {
+    io.to(targetUserId).emit('voice-offer', {
+      fromUserId: socket.id,
+      offer,
+      senderRole,
+      nickname,
+    });
+  });
+
+  socket.on('voice-answer', ({ targetUserId, answer }) => {
+    io.to(targetUserId).emit('voice-answer', {
+      fromUserId: socket.id,
+      answer,
+    });
+  });
+
+  socket.on('voice-ice-candidate', ({ targetUserId, candidate }) => {
+    io.to(targetUserId).emit('voice-ice-candidate', {
+      fromUserId: socket.id,
+      candidate,
+    });
+  });
+
+  socket.on('voice-mute-state', ({ roomId, isMuted }) => {
+    const roomMap = voiceRoomUsers.get(roomId);
+    if (roomMap && roomMap.has(socket.id)) {
+      roomMap.get(socket.id)!.isMuted = isMuted;
+    }
+    socket.to(roomId).emit('voice-mute-state', {
+      socketId: socket.id,
+      isMuted,
+    });
+  });
+
+  socket.on('voice-admin-control', ({ roomId, action, allowed, token }) => {
+    if (!verifyAdmin(roomId, token)) return;
+
+    if (action === 'MUTE_ALL') {
+      const roomMap = voiceRoomUsers.get(roomId);
+      if (roomMap) {
+        roomMap.forEach((u) => {
+          if (u.role !== 'ADMIN') u.isMuted = true;
+        });
+      }
+    }
+
+    io.to(roomId).emit('voice-admin-control', { action, allowed });
+  });
+
+  // Legacy Alias Handlers for Backwards Compatibility
   socket.on('sendWebrtcOffer', ({ targetSocketId, sdp, senderRole, nickname }) => {
     io.to(targetSocketId).emit('webrtcOffer', {
       senderSocketId: socket.id,
@@ -477,28 +607,6 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     });
   });
 
-  socket.on('requestToSpeak', ({ roomId, participantId, nickname }) => {
-    io.to(roomId).emit('speakRequested', {
-      participantId,
-      socketId: socket.id,
-      nickname,
-    });
-  });
-
-  socket.on('grantSpeakPermission', ({ roomId, targetSocketId, allowed, token }) => {
-    if (!verifyAdmin(roomId, token)) return;
-    io.to(targetSocketId).emit('speakPermissionGranted', { allowed });
-  });
-
-  socket.on('toggleAudioMute', ({ roomId, isMuted }) => {
-    io.to(roomId).emit('audioStatusChanged', {
-      socketId: socket.id,
-      isMuted,
-      role: socket.data.role || 'VIEWER',
-      nickname: socket.data.participantId,
-    });
-  });
-
   socket.on('startVoiceBroadcast', ({ roomId, role, nickname }) => {
     socket.to(roomId).emit('userStartedVoice', {
       socketId: socket.id,
@@ -513,12 +621,19 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     });
   });
 
-  // 14. Handle Disconnect
+  // 15. Handle Disconnect
   socket.on('disconnect', () => {
     const roomId = socket.data.roomId;
     const role = socket.data.role;
 
     if (roomId) {
+      const roomMap = voiceRoomUsers.get(roomId);
+      if (roomMap) {
+        roomMap.delete(socket.id);
+        if (roomMap.size === 0) voiceRoomUsers.delete(roomId);
+      }
+      io.to(roomId).emit('voice-user-left', { socketId: socket.id });
+
       const room = roomStore.getRoom(roomId);
       if (room) {
         if (role === 'ADMIN') {
@@ -544,4 +659,5 @@ server.listen(PORT, () => {
   console.log(`🚀 LiveControl Socket.IO Backend Server running on port ${PORT}`);
   console.log(`🌐 Configured FRONTEND_URL: ${FRONTEND_URL}`);
   console.log(`🔑 Master ADMIN_PIN: ${SYSTEM_ADMIN_PIN}`);
+  console.log(`🎙️ Voice Max Capacity: ${MAX_VOICE_PARTICIPANTS} per room`);
 });
