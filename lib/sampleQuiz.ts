@@ -1,0 +1,111 @@
+import { QuizQuestion } from '../types';
+
+export const SAMPLE_QUIZ_TITLE = 'AI Fundamentals Quiz';
+
+export const SAMPLE_QUIZ_QUESTIONS: QuizQuestion[] = [
+  {
+    id: 1,
+    question: 'What is Machine Learning?',
+    options: [
+      'A database management system',
+      'A method where computers learn patterns from data without explicit programming',
+      'An operating system developed for quantum computers',
+      'A hardware chip manufactured for graphics processing',
+    ],
+    correctOption: 1,
+    explanation: 'Machine Learning algorithms learn from training data to make predictions or decisions without being explicitly programmed for every scenario.',
+    points: 10,
+  },
+  {
+    id: 2,
+    question: 'Which neural network architecture introduced the self-attention mechanism in 2017?',
+    options: ['Convolutional Neural Network (CNN)', 'Recurrent Neural Network (RNN)', 'Transformer', 'Generative Adversarial Network (GAN)'],
+    correctOption: 2,
+    explanation: 'The Transformer architecture was introduced in the paper "Attention Is All You Need" (Vaswani et al., 2017) and powers modern LLMs.',
+    points: 10,
+  },
+  {
+    id: 3,
+    question: 'What does NLP stand for in Artificial Intelligence?',
+    options: [
+      'Network Layer Protocol',
+      'Natural Language Processing',
+      'Non-Linear Programming',
+      'Neural Logic Processing',
+    ],
+    correctOption: 1,
+    explanation: 'NLP (Natural Language Processing) is the field of AI focused on giving computers the ability to understand text and spoken words.',
+    points: 10,
+  },
+  {
+    id: 4,
+    question: 'Which programming language is the most widely used ecosystem for Machine Learning and AI development?',
+    options: ['C++', 'Python', 'Java', 'Ruby'],
+    correctOption: 1,
+    explanation: 'Python is the leading language in AI/ML due to frameworks like PyTorch, TensorFlow, NumPy, and scikit-learn.',
+    points: 10,
+  },
+  {
+    id: 5,
+    question: 'What type of machine learning uses labeled datasets to train models?',
+    options: ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning', 'Zero-Shot Learning'],
+    correctOption: 0,
+    explanation: 'Supervised Learning uses pairs of input data and ground-truth labels during model training.',
+    points: 10,
+  },
+  {
+    id: 6,
+    question: 'What happens when a Machine Learning model suffers from "overfitting"?',
+    options: [
+      'It performs poorly on both training and test data',
+      'It performs extremely well on training data but fails to generalize to new data',
+      'It runs out of GPU RAM memory during inference',
+      'It produces output in under 1 millisecond',
+    ],
+    correctOption: 1,
+    explanation: 'Overfitting occurs when a model memorizes noise in the training set instead of learning generalizable patterns.',
+    points: 10,
+  },
+  {
+    id: 7,
+    question: 'Which AI branch focuses on processing and understanding visual input like images and video?',
+    options: ['Computer Vision', 'Speech Synthesis', 'Robotic Process Automation', 'Expert Systems'],
+    correctOption: 0,
+    explanation: 'Computer Vision enables machines to extract meaningful information from digital images, videos, and visual inputs.',
+    points: 10,
+  },
+  {
+    id: 8,
+    question: 'Which paradigm trains agents to take actions in an environment to maximize cumulative reward?',
+    options: ['Supervised Learning', 'Reinforcement Learning', 'Clustering', 'Dimensionality Reduction'],
+    correctOption: 1,
+    explanation: 'Reinforcement Learning uses a trial-and-error reward system to train autonomous decision-making agents.',
+    points: 10,
+  },
+  {
+    id: 9,
+    question: 'What is a Primary Characteristic of Generative AI models?',
+    options: [
+      'They only classify existing files into categories',
+      'They generate brand-new content (text, images, code, audio) based on learned patterns',
+      'They only work when connected to a physical robot',
+      'They replace all database indexes',
+    ],
+    correctOption: 1,
+    explanation: 'Generative AI produces original content by learning the probability distribution of training data.',
+    points: 10,
+  },
+  {
+    id: 10,
+    question: 'What does "AGI" stand for in future AI research discussions?',
+    options: [
+      'Automated Graphics Interface',
+      'Artificial General Intelligence',
+      'Algorithmic Gradient Integration',
+      'Advanced GPU Infrastructure',
+    ],
+    correctOption: 1,
+    explanation: 'Artificial General Intelligence (AGI) refers to hypothetical AI systems that match or exceed human cognitive abilities across any intellectual task.',
+    points: 10,
+  },
+];
