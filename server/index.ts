@@ -19,7 +19,13 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const PORT = process.env.PORT || 3001;
 const SYSTEM_ADMIN_PIN = process.env.ADMIN_PIN || 'admin123';
 
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+// Permissive CORS middleware for Express & Vercel Preview Deployments
+app.use(
+  cors({
+    origin: (origin, callback) => callback(null, true),
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Express REST API Routes
@@ -27,7 +33,25 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// CSV Export Endpoint
+// REST API Endpoint: Create Room (HTTP Fallback)
+app.post('/api/create-room', (req, res) => {
+  try {
+    const { type, title, pin } = req.body;
+    const roomPin = pin && pin.trim().length >= 4 ? pin.trim() : SYSTEM_ADMIN_PIN;
+    const room = roomStore.createRoom(type || 'presentation', title || 'Untitled Session', roomPin);
+
+    console.log(`✨ Created new ${room.type} room via HTTP REST API: ${room.id} ("${room.title}")`);
+    return res.json({
+      success: true,
+      roomId: room.id,
+      adminToken: room.adminToken,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || 'Failed to create room' });
+  }
+});
+
+// REST API Endpoint: CSV Export
 app.get('/api/download-results/:roomId', (req, res) => {
   const roomId = req.params.roomId;
   const room = roomStore.getRoom(roomId);
@@ -45,10 +69,10 @@ app.get('/api/download-results/:roomId', (req, res) => {
   return res.status(200).send(csv);
 });
 
-// Socket.IO Setup
+// Socket.IO Setup with Permissive CORS
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: {
-    origin: [FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => callback(null, true),
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -60,19 +84,16 @@ const quizTimers: Map<string, NodeJS.Timeout> = new Map();
 io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
   const clientIp = socket.handshake.address || 'unknown';
 
-  // Helper function to verify admin token
   const verifyAdmin = (roomId: string, token: string): boolean => {
     const room = roomStore.getRoom(roomId);
     if (!room) return false;
     return room.adminToken === token;
   };
 
-  // Broadcast helper to notify all clients in a room with updated state
   const broadcastRoomState = (roomId: string) => {
     const room = roomStore.getRoom(roomId);
     if (!room) return;
 
-    // Send personalized state to each socket in the room
     const roomSockets = io.sockets.adapter.rooms.get(roomId);
     if (roomSockets) {
       roomSockets.forEach((sId) => {
@@ -85,13 +106,13 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     }
   };
 
-  // 1. Create Room
+  // 1. Create Room via Socket
   socket.on('createRoom', ({ type, title, pin }, callback) => {
     try {
       const roomPin = pin && pin.trim().length >= 4 ? pin.trim() : SYSTEM_ADMIN_PIN;
       const room = roomStore.createRoom(type, title, roomPin);
 
-      console.log(`✨ Created new ${type} room: ${room.id} ("${title}")`);
+      console.log(`✨ Created new ${type} room via Socket: ${room.id} ("${title}")`);
       callback({
         success: true,
         roomId: room.id,
@@ -116,7 +137,6 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
       return callback({ success: false, error: 'Room does not exist or has been deleted.' });
     }
 
-    // Verify PIN against room PIN or system master PIN
     const isValidPin = pin === room.adminPin || pin === SYSTEM_ADMIN_PIN;
 
     if (!isValidPin) {
@@ -135,7 +155,6 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
     sessionStore.recordSuccessfulAuth(clientIp);
 
-    // Mark socket as admin
     socket.data.role = 'ADMIN';
     socket.data.roomId = room.id;
     socket.data.adminToken = room.adminToken;
@@ -143,7 +162,6 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     roomStore.updateAdminStatus(room.id, true);
     socket.join(room.id);
 
-    // Notify room of admin status change
     io.to(room.id).emit('adminStatusChanged', { connected: true });
     broadcastRoomState(room.id);
 
@@ -265,7 +283,6 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
   socket.on('changeQuestion', ({ roomId, questionIndex }) => {
     if (!verifyAdmin(roomId, socket.data.adminToken)) return;
 
-    // Clear active timer if running
     if (quizTimers.has(roomId)) {
       clearTimeout(quizTimers.get(roomId)!);
       quizTimers.delete(roomId);
@@ -292,12 +309,10 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     if (durationSeconds && durationSeconds > 0) {
       endsAt = Date.now() + durationSeconds * 1000;
 
-      // Clear existing timer
       if (quizTimers.has(roomId)) {
         clearTimeout(quizTimers.get(roomId)!);
       }
 
-      // Schedule auto-close timer
       const timer = setTimeout(() => {
         const targetRoom = roomStore.getRoom(roomId);
         if (targetRoom && targetRoom.type === 'quiz' && targetRoom.answersOpen) {
@@ -360,7 +375,6 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
         distribution[opt] = (distribution[opt] || 0) + 1;
       });
 
-      // Emit live update to admin
       io.to(roomId).emit('liveAnswerUpdate', {
         answeredCount,
         totalCount,
@@ -427,19 +441,13 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
     console.log(`🛑 Admin explicitly ended session for room: ${roomId}`);
 
-    // Clear active timer
     if (quizTimers.has(roomId)) {
       clearTimeout(quizTimers.get(roomId)!);
       quizTimers.delete(roomId);
     }
 
-    // 1. Notify all connected viewers/participants
     io.to(roomId).emit('sessionEnded', { reason: 'This session has been ended by the host.' });
-
-    // 2. Disconnect viewers & participants from socket room
     io.in(roomId).socketsLeave(roomId);
-
-    // 3. Delete room permanently from server memory
     roomStore.deleteRoom(roomId);
 
     if (callback) callback({ success: true });
@@ -470,7 +478,6 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
   });
 });
 
-// Start auto-cleanup service
 autoCleanupService.start(roomStore);
 
 server.listen(PORT, () => {

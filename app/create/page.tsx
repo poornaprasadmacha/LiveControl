@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/shared/Navbar';
 import { socket } from '@/lib/socket';
-import { Presentation, HelpCircle, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { Presentation, HelpCircle, Lock, ArrowRight, AlertTriangle, ExternalLink } from 'lucide-react';
 import { SAMPLE_PRESENTATION_TITLE } from '@/lib/samplePresentation';
 import { SAMPLE_QUIZ_TITLE } from '@/lib/sampleQuiz';
 
@@ -16,6 +16,8 @@ export default function CreateSessionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || 'http://localhost:3001';
+
   useEffect(() => {
     if (sessionType === 'presentation') {
       setTitle(SAMPLE_PRESENTATION_TITLE);
@@ -24,7 +26,7 @@ export default function CreateSessionPage() {
     }
   }, [sessionType]);
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError('Please enter a session title.');
@@ -34,14 +36,49 @@ export default function CreateSessionPage() {
     setIsLoading(true);
     setError(null);
 
+    // Timeout safety fallback (5 seconds)
+    const timer = setTimeout(() => {
+      setIsLoading((currentlyLoading) => {
+        if (currentlyLoading) {
+          setError(
+            `Connection Timeout: Could not reach backend server at ${socketServerUrl}.\n\nIf you deployed on Vercel, please set NEXT_PUBLIC_SOCKET_SERVER_URL in Vercel settings to your active backend (e.g. Render.com).`
+          );
+          return false;
+        }
+        return false;
+      });
+    }, 5000);
+
+    // 1. Try REST API endpoint first for instant room creation
+    try {
+      const res = await fetch(`${socketServerUrl}/api/create-room`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: sessionType, title: title.trim(), pin: pin.trim() }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.roomId && data.adminToken) {
+          clearTimeout(timer);
+          sessionStorage.setItem(`lc_admin_token_${data.roomId}`, data.adminToken);
+          router.push(`/admin/${data.roomId}`);
+          return;
+        }
+      }
+    } catch (httpErr) {
+      // If REST API fetch failed or server unreachable, fallback to Socket.IO
+    }
+
+    // 2. Fallback to Socket.IO emit
     if (!socket.connected) {
       socket.connect();
     }
 
     socket.emit('createRoom', { type: sessionType, title: title.trim(), pin: pin.trim() }, (res) => {
+      clearTimeout(timer);
       setIsLoading(false);
       if (res.success && res.roomId && res.adminToken) {
-        // Save admin token in sessionStorage for browser session continuity
         sessionStorage.setItem(`lc_admin_token_${res.roomId}`, res.adminToken);
         router.push(`/admin/${res.roomId}`);
       } else {
@@ -133,8 +170,14 @@ export default function CreateSessionPage() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-rose-600 dark:text-rose-400 text-xs font-bold">
-                {error}
+              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-2">
+                <div className="flex items-center gap-2 font-bold text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>Backend Server Unreachable</span>
+                </div>
+                <p className="whitespace-pre-line text-[11px] font-medium leading-relaxed">
+                  {error}
+                </p>
               </div>
             )}
 
