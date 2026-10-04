@@ -499,6 +499,20 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     });
   });
 
+  socket.on('startVoiceBroadcast', ({ roomId, role, nickname }) => {
+    socket.to(roomId).emit('userStartedVoice', {
+      socketId: socket.id,
+      role,
+      nickname,
+    });
+  });
+
+  socket.on('stopVoiceBroadcast', ({ roomId }) => {
+    socket.to(roomId).emit('userStoppedVoice', {
+      socketId: socket.id,
+    });
+  });
+
   // 14. Handle Disconnect
   socket.on('disconnect', () => {
     const roomId = socket.data.roomId;

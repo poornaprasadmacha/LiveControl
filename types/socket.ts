@@ -21,6 +21,8 @@ export interface ServerToClientEvents {
   speakRequested: (data: { participantId: string; socketId: string; nickname: string }) => void;
   speakPermissionGranted: (data: { allowed: boolean }) => void;
   audioStatusChanged: (data: { socketId: string; isMuted: boolean; role: string; nickname?: string }) => void;
+  userStartedVoice: (data: { socketId: string; role: string; nickname?: string }) => void;
+  userStoppedVoice: (data: { socketId: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -72,4 +74,6 @@ export interface ClientToServerEvents {
   requestToSpeak: (data: { roomId: string; participantId: string; nickname: string }) => void;
   grantSpeakPermission: (data: { roomId: string; targetSocketId: string; allowed: boolean; token: string }) => void;
   toggleAudioMute: (data: { roomId: string; isMuted: boolean }) => void;
+  startVoiceBroadcast: (data: { roomId: string; role: string; nickname?: string }) => void;
+  stopVoiceBroadcast: (data: { roomId: string }) => void;
 }
