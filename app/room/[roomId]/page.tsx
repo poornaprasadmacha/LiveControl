@@ -151,22 +151,22 @@ export default function RoomPage() {
   // 1. Session Ended View
   if (isSessionEnded) {
     return (
-      <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-7 text-center space-y-5">
-          <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 mx-auto flex items-center justify-center border border-slate-200 dark:border-slate-700">
-            <Radio className="w-6 h-6 text-brand-secondary" />
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 font-sans">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-800 mx-auto flex items-center justify-center border border-slate-200">
+            <Radio className="w-8 h-8 text-emerald-800" />
           </div>
-          <div className="space-y-1">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-extrabold text-slate-900">
               Session Has Ended
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-sm font-medium text-slate-600">
               The host has ended this live room. All active session data was cleared.
             </p>
           </div>
           <Link
             href="/"
-            className="inline-block px-5 py-2.5 bg-brand-primary text-white font-bold text-xs rounded-xl hover:bg-brand-primaryDark transition-all"
+            className="inline-block px-6 py-3 bg-blue-900 text-white font-extrabold text-sm rounded-xl hover:bg-blue-800 transition-all"
           >
             Return to Home Page
           </Link>
@@ -178,20 +178,20 @@ export default function RoomPage() {
   // 2. Error View
   if (error) {
     return (
-      <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-brand-darkCard border border-rose-200 dark:border-rose-900/60 rounded-2xl p-7 text-center space-y-5">
-          <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
-          <div className="space-y-1">
-            <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 font-sans">
+        <div className="max-w-md w-full bg-white border border-rose-200 rounded-2xl p-8 text-center space-y-6">
+          <AlertCircle className="w-12 h-12 text-rose-600 mx-auto" />
+          <div className="space-y-2">
+            <h1 className="text-2xl font-extrabold text-slate-900">
               Unable to Join Room
             </h1>
-            <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+            <p className="text-sm font-bold text-rose-700">
               {error}
             </p>
           </div>
           <Link
             href="/join"
-            className="inline-block px-5 py-2.5 bg-brand-primary text-white font-bold text-xs rounded-xl"
+            className="inline-block px-6 py-3 bg-blue-900 text-white font-extrabold text-sm rounded-xl"
           >
             Try Another Room Code
           </Link>
@@ -203,9 +203,9 @@ export default function RoomPage() {
   // 3. Loading / Connecting View
   if (!roomState) {
     return (
-      <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg flex flex-col items-center justify-center p-4">
-        <div className="flex items-center gap-2.5 text-slate-600 dark:text-slate-300 text-xs font-bold">
-          <RefreshCw className="w-4 h-4 animate-spin text-brand-primary" />
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 font-sans">
+        <div className="flex items-center gap-3 text-slate-700 text-base font-bold">
+          <RefreshCw className="w-5 h-5 animate-spin text-blue-900" />
           <span>Connecting to Room {roomId}...</span>
         </div>
       </div>

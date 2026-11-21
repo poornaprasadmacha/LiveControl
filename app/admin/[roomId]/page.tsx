@@ -166,23 +166,23 @@ export default function AdminDashboardPage() {
   // 1. PIN Auth Prompt Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg flex flex-col justify-center items-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-7 space-y-6">
+      <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4 font-sans">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 mx-auto flex items-center justify-center border border-slate-200 dark:border-slate-700">
-              <KeyRound className="w-6 h-6 text-brand-primary dark:text-slate-200" />
+            <div className="w-14 h-14 rounded-2xl bg-blue-900 text-white mx-auto flex items-center justify-center">
+              <KeyRound className="w-7 h-7" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              Host Authentication
+            <h1 className="text-2xl font-extrabold text-slate-900">
+              Host Studio Authentication
             </h1>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Enter Admin PIN to control room <strong className="font-mono text-slate-800 dark:text-slate-200">{roomId}</strong>
+            <p className="text-sm font-semibold text-slate-600">
+              Enter Admin PIN to control room <strong className="font-mono text-blue-900">{roomId}</strong>
             </p>
           </div>
 
           <form onSubmit={handlePinSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <label className="text-xs font-bold text-slate-700">
                 Admin Security PIN
               </label>
               <input
@@ -191,12 +191,12 @@ export default function AdminDashboardPage() {
                 placeholder="Enter PIN"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono font-bold text-center text-lg focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all"
+                className="w-full px-4 py-3.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-mono font-bold text-center text-lg focus:outline-none focus:ring-2 focus:ring-blue-900 transition-all"
               />
             </div>
 
             {authError && (
-              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-rose-600 dark:text-rose-400 text-xs font-bold text-center">
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold text-center">
                 {authError}
               </div>
             )}
@@ -204,21 +204,21 @@ export default function AdminDashboardPage() {
             <button
               type="submit"
               disabled={isAuthenticating}
-              className="w-full py-3.5 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              className="w-full py-4 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-base rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
               {isAuthenticating ? (
                 <span>Verifying PIN...</span>
               ) : (
                 <>
-                  <span>Authenticate & Open Dashboard</span>
+                  <span>Open Studio Dashboard</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          <p className="text-[11px] text-slate-400 text-center">
-            Server-side authentication protects host controls from unauthorized viewers.
+          <p className="text-xs text-slate-500 text-center font-medium">
+            Server-authoritative host security protects live session progression.
           </p>
         </div>
       </div>
@@ -228,10 +228,10 @@ export default function AdminDashboardPage() {
   // 2. Loading State
   if (!roomState) {
     return (
-      <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg flex items-center justify-center p-4">
-        <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300 text-sm font-semibold">
-          <RefreshCw className="w-4 h-4 animate-spin text-brand-primary" />
-          <span>Loading Dashboard State...</span>
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
+        <div className="flex items-center gap-3 text-slate-700 text-base font-bold">
+          <RefreshCw className="w-5 h-5 animate-spin text-blue-900" />
+          <span>Connecting to Studio Dashboard...</span>
         </div>
       </div>
     );
