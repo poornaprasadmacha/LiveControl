@@ -257,12 +257,12 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           </div>
         )}
 
-        {/* Expected Answer Card with Extra Size */}
+        {/* Answer Card with Extra Size */}
         {slide.expectedAnswer && (
           <div className={`${theme.answerBg} ${theme.answerBorder} border p-4 sm:p-5 rounded-2xl space-y-1.5`}>
             <span className={`text-xs font-extrabold uppercase tracking-wider ${theme.answerText} flex items-center gap-1.5`}>
               <CheckCircle2 className="w-4 h-4" />
-              <span>Expected Answer</span>
+              <span>Answer</span>
             </span>
             <p className={`text-base sm:text-lg md:text-xl font-bold ${theme.answerText} leading-relaxed`}>
               {slide.expectedAnswer}
@@ -270,14 +270,18 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           </div>
         )}
 
-        {/* Image Display Framed like the Photo Cards in Reference Image */}
+        {/* Full Image Display for User and Admin (Uncropped with Natural Proportions) */}
         {slide.imageUrl && (
-          <div className="rounded-2xl overflow-hidden border border-black/10 bg-black/5 max-h-60 sm:max-h-72 flex items-center justify-center">
+          <div className="w-full rounded-2xl overflow-hidden border border-black/10 bg-black/[0.02] flex items-center justify-center my-2 p-1 transition-all">
             <img 
               src={slide.imageUrl} 
               alt={slide.title} 
               loading="lazy"
-              className="w-full h-full object-cover max-h-60 sm:max-h-72"
+              className={`w-full h-auto ${
+                slide.type === 'image' && !slide.content && !slide.englishText
+                  ? 'max-h-[64vh] sm:max-h-[70vh]'
+                  : 'max-h-[46vh] sm:max-h-[52vh]'
+              } object-contain rounded-xl`}
             />
           </div>
         )}

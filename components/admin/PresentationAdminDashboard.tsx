@@ -256,6 +256,15 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
             <Share2 className="w-4 h-4" />
           </button>
 
+          {/* Quick Fullscreen on Mobile */}
+          <button
+            onClick={toggleFullscreen}
+            className="p-1.5 rounded-full text-slate-600 hover:text-slate-950 hover:bg-slate-100 transition-colors sm:hidden"
+            title="Toggle Fullscreen"
+          >
+            <Maximize className="w-4 h-4" />
+          </button>
+
           {/* Quick End on Mobile */}
           <button
             onClick={() => setIsEndModalOpen(true)}

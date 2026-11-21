@@ -78,13 +78,11 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
   {
     id: 3,
     type: 'text',
-    title: 'Answer 1',
+    title: 'Answer',
     subtitle: 'Observation from Verse 13',
-    badge: 'Answer 1',
+    badge: 'Answer',
     pinnedScripture: JAMES_SCRIPTURE_REFERENCE,
-    content: [
-      'They planned to travel, stay for a year, do business, and make profits.',
-    ],
+    expectedAnswer: 'They planned to travel, stay for a year, do business, and make profits.',
   },
   {
     id: 4,
@@ -99,9 +97,9 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
   {
     id: 5,
     type: 'text',
-    title: 'Expected Answer 2',
+    title: 'Answer',
     subtitle: 'Self-Reliance vs. God-Reliance',
-    badge: 'Answer 2',
+    badge: 'Answer',
     pinnedScripture: JAMES_SCRIPTURE_REFERENCE,
     expectedAnswer: 'They were speaking as if they had complete control over their future without acknowledging God.',
   },
@@ -118,11 +116,12 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
   {
     id: 7,
     type: 'text',
-    title: 'Expected Answer 3',
+    title: 'Answer',
     subtitle: 'God in Control of Time',
-    badge: 'Answer 3',
+    badge: 'Answer',
     pinnedScripture: JAMES_SCRIPTURE_REFERENCE,
     expectedAnswer: 'Because we are not in control of tomorrow. Only God knows the future.',
+    imageUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 8,
@@ -137,11 +136,12 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
   {
     id: 9,
     type: 'text',
-    title: 'Expected Answer 4',
+    title: 'Answer',
     subtitle: 'Eternal Perspective',
-    badge: 'Answer 4',
+    badge: 'Answer',
     pinnedScripture: JAMES_SCRIPTURE_REFERENCE,
     expectedAnswer: 'Because life is temporary, short, and uncertain. We should not waste it living without God.',
+    imageUrl: 'https://images.unsplash.com/photo-1487621167305-5d248087c724?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 10,
@@ -156,15 +156,16 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
   {
     id: 11,
     type: 'text',
-    title: 'Expected Answer 5',
+    title: 'Answer',
     subtitle: 'Submitting Plans to God',
-    badge: 'Answer 5',
+    badge: 'Answer',
     pinnedScripture: JAMES_SCRIPTURE_REFERENCE,
     expectedAnswer: "No. Planning is good. But we should plan humbly, pray, and submit our plans to God's will.",
     content: [
       'Proverbs 16:3:',
       '"Commit to the Lord whatever you do, and he will establish your plans."',
     ],
+    imageUrl: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 12,
@@ -179,9 +180,9 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
   {
     id: 13,
     type: 'bullet',
-    title: 'Expected Answers',
+    title: 'Answer',
     subtitle: 'Steps for Godly Decision Making',
-    badge: 'Answer 9',
+    badge: 'Answer',
     pinnedScripture: JAMES_SCRIPTURE_REFERENCE,
     content: [
       'Pray.',
@@ -190,6 +191,7 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
       'Examine our motives.',
       'Submit the decision to God.',
     ],
+    imageUrl: 'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 14,
@@ -200,6 +202,7 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
     pinnedScripture: JAMES_SCRIPTURE_REFERENCE,
     englishText: '"Lord, I have plans for my future, but if Your will is different, I am willing to __________."',
     teluguText: '"ప్రభువా, నా భవిష్యత్తు గురించి నాకు ప్రణాళికలు ఉన్నాయి. కానీ నీ చిత్తము వేరుగా ఉంటే, దానికి విధేయత చూపడానికి నేను__________."',
+    imageUrl: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 15,
@@ -240,6 +243,7 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
     badge: 'Psalm 55:17',
     englishText: 'English (KJV):\n"Evening, and morning, and at noon, will I pray, and cry aloud: and he shall hear my voice."',
     teluguText: 'తెలుగు:\nసాయంకాలమున ఉదయమున మధ్యాహ్నమున నేను మొఱ్ఱపెట్టుచు ప్రార్థించెదను; ఆయన నా స్వరము వినును.',
+    imageUrl: 'https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 19,
@@ -293,6 +297,7 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
       'When we have nothing to do',
       'David used moments of quietness to remember and meditate upon God.',
     ],
+    imageUrl: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 24,
@@ -350,6 +355,7 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
       'నీ న్యాయవిధులనుబట్టి దినమునకు ఏడు మారులు నేను నిన్ను స్తుతించు చున్నాను.',
       'Seven times a day I praise you for your righteous laws.',
     ],
+    imageUrl: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 28,
@@ -370,6 +376,7 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
       'యెహోవాయొద్ద ఒక్క వరము అడిగితిని దానిని నేను వెదకుచున్నాను. యెహోవా ప్రసన్నతను చూచుటకును ఆయన ఆల యములో ధ్యానించుటకును నా జీవితకాలమంతయు నేను యెహోవా మందిర ములో నివసింప గోరుచున్నాను.',
       'One thing I ask from the Lord, this only do I seek: that I may dwell in the house of the Lord all the days of my life, to gaze on the beauty of the Lord and to seek him in his temple.',
     ],
+    imageUrl: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 30,
@@ -383,6 +390,7 @@ export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
       'Won Battles…',
       'Protected Kingdom…',
     ],
+    imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80',
   },
   {
     id: 31,
