@@ -15,6 +15,140 @@ interface SlideViewerProps {
   slides?: SlideContent[];
 }
 
+interface SlideColorTheme {
+  cardBg: string;
+  borderColor: string;
+  badgeBg: string;
+  badgeText: string;
+  titleColor: string;
+  subtitleColor: string;
+  verseBg: string;
+  verseBorder: string;
+  accentBar: string;
+  answerBg: string;
+  answerBorder: string;
+  answerText: string;
+}
+
+// 7 Soft, Eye-Soothing Pastel Themes based on user's reference photo
+const SLIDE_THEMES: Record<string, SlideColorTheme> = {
+  // 1. Sage / Mint Green (James 4 Scripture & Opening)
+  mint: {
+    cardBg: 'bg-[#f4fbf6]',
+    borderColor: 'border-[#bbf7d0]',
+    badgeBg: 'bg-[#dcfce7]',
+    badgeText: 'text-[#166534]',
+    titleColor: 'text-[#14532d]',
+    subtitleColor: 'text-[#15803d]',
+    verseBg: 'bg-white/90',
+    verseBorder: 'border-[#bbf7d0]',
+    accentBar: 'bg-[#16a34a]',
+    answerBg: 'bg-[#dcfce7]',
+    answerBorder: 'border-[#86efac]',
+    answerText: 'text-[#14532d]',
+  },
+  // 2. Soft Sky Blue (Mist of Life & Uncertainty of Tomorrow)
+  sky: {
+    cardBg: 'bg-[#f0f9ff]',
+    borderColor: 'border-[#bae6fd]',
+    badgeBg: 'bg-[#e0f2fe]',
+    badgeText: 'text-[#075985]',
+    titleColor: 'text-[#0c4a6e]',
+    subtitleColor: 'text-[#0284c7]',
+    verseBg: 'bg-white/90',
+    verseBorder: 'border-[#bae6fd]',
+    accentBar: 'bg-[#0284c7]',
+    answerBg: 'bg-[#e0f2fe]',
+    answerBorder: 'border-[#7dd3fc]',
+    answerText: 'text-[#0c4a6e]',
+  },
+  // 3. Soft Lavender / Purple (Planning, God's Will & Decisions)
+  lavender: {
+    cardBg: 'bg-[#faf5ff]',
+    borderColor: 'border-[#e9d5ff]',
+    badgeBg: 'bg-[#f3e8ff]',
+    badgeText: 'text-[#6b21a8]',
+    titleColor: 'text-[#581c87]',
+    subtitleColor: 'text-[#9333ea]',
+    verseBg: 'bg-white/90',
+    verseBorder: 'border-[#e9d5ff]',
+    accentBar: 'bg-[#9333ea]',
+    answerBg: 'bg-[#f3e8ff]',
+    answerBorder: 'border-[#d8b4fe]',
+    answerText: 'text-[#581c87]',
+  },
+  // 4. Soft Warm Amber / Peach (David's Life, Morning Prayer Psalm 5:3)
+  amber: {
+    cardBg: 'bg-[#fffbeb]',
+    borderColor: 'border-[#fed7aa]',
+    badgeBg: 'bg-[#fef3c7]',
+    badgeText: 'text-[#92400e]',
+    titleColor: 'text-[#78350f]',
+    subtitleColor: 'text-[#b45309]',
+    verseBg: 'bg-white/90',
+    verseBorder: 'border-[#fed7aa]',
+    accentBar: 'bg-[#d97706]',
+    answerBg: 'bg-[#fef3c7]',
+    answerBorder: 'border-[#fcd34d]',
+    answerText: 'text-[#78350f]',
+  },
+  // 5. Soft Indigo (Night Meditation Psalm 63, Leisure Moments)
+  indigo: {
+    cardBg: 'bg-[#f5f7ff]',
+    borderColor: 'border-[#c7d2fe]',
+    badgeBg: 'bg-[#e0e7ff]',
+    badgeText: 'text-[#3730a3]',
+    titleColor: 'text-[#312e81]',
+    subtitleColor: 'text-[#4338ca]',
+    verseBg: 'bg-white/90',
+    verseBorder: 'border-[#c7d2fe]',
+    accentBar: 'bg-[#4f46e5]',
+    answerBg: 'bg-[#e0e7ff]',
+    answerBorder: 'border-[#a5b4fc]',
+    answerText: 'text-[#312e81]',
+  },
+  // 6. Soft Rose / Coral (Crisis, Keilah 1 Sam 23, Battle, Timeline)
+  rose: {
+    cardBg: 'bg-[#fff1f2]',
+    borderColor: 'border-[#fecdd3]',
+    badgeBg: 'bg-[#ffe4e6]',
+    badgeText: 'text-[#9f1239]',
+    titleColor: 'text-[#881337]',
+    subtitleColor: 'text-[#be123c]',
+    verseBg: 'bg-white/90',
+    verseBorder: 'border-[#fecdd3]',
+    accentBar: 'bg-[#e11d48]',
+    answerBg: 'bg-[#ffe4e6]',
+    answerBorder: 'border-[#fda4af]',
+    answerText: 'text-[#881337]',
+  },
+  // 7. Soft Teal / Turquoise (One Thing I Desire, God Answered, Conclusion)
+  teal: {
+    cardBg: 'bg-[#f0fdfa]',
+    borderColor: 'border-[#99f6e4]',
+    badgeBg: 'bg-[#ccfbf1]',
+    badgeText: 'text-[#115e59]',
+    titleColor: 'text-[#134e4a]',
+    subtitleColor: 'text-[#0f766e]',
+    verseBg: 'bg-white/90',
+    verseBorder: 'border-[#99f6e4]',
+    accentBar: 'bg-[#0d9488]',
+    answerBg: 'bg-[#ccfbf1]',
+    answerBorder: 'border-[#5eead4]',
+    answerText: 'text-[#134e4a]',
+  },
+};
+
+function getThemeForSlide(slideId: number): SlideColorTheme {
+  if (slideId >= 1 && slideId <= 3) return SLIDE_THEMES.mint;
+  if (slideId >= 4 && slideId <= 9) return SLIDE_THEMES.sky;
+  if (slideId >= 10 && slideId <= 14) return SLIDE_THEMES.lavender;
+  if (slideId >= 15 && slideId <= 18) return SLIDE_THEMES.amber;
+  if (slideId >= 19 && slideId <= 23) return SLIDE_THEMES.indigo;
+  if (slideId >= 24 && slideId <= 27) return SLIDE_THEMES.rose;
+  return SLIDE_THEMES.teal;
+}
+
 export const SlideViewer: React.FC<SlideViewerProps> = ({ 
   currentSlide, 
   isBlank,
@@ -29,9 +163,11 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
   const slide: SlideContent = slides[slideIndex] || slides[0];
   const progressPercent = Math.round(((slideIndex + 1) / totalSlides) * 100);
 
+  const theme = getThemeForSlide(slide.id);
+
   if (isBlank) {
     return (
-      <div className={`w-full h-full min-h-[560px] bg-slate-900 text-slate-200 flex flex-col items-center justify-center p-8 rounded-2xl border border-slate-800 transition-all duration-300 ${className}`}>
+      <div className={`w-full h-full min-h-[560px] bg-slate-900 text-slate-200 flex flex-col items-center justify-center p-8 rounded-3xl border border-slate-800 transition-all duration-300 font-sans ${className}`}>
         <div className="w-14 h-14 rounded-2xl border border-slate-700 bg-slate-800 flex items-center justify-center mb-4 text-slate-400">
           <BookOpen className="w-7 h-7" />
         </div>
@@ -42,41 +178,41 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
   }
 
   return (
-    <div className={`w-full h-full min-h-[560px] bg-white text-slate-900 rounded-2xl border border-slate-200 p-5 sm:p-7 flex flex-col justify-between relative overflow-hidden transition-all duration-300 font-sans ${className}`}>
+    <div className={`w-full h-full min-h-[560px] ${theme.cardBg} ${theme.borderColor} border rounded-3xl p-5 sm:p-7 flex flex-col justify-between relative overflow-hidden transition-all duration-300 font-sans select-none ${className}`}>
       
-      {/* Top Slide Meta Bar */}
-      <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 z-10 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-blue-900 text-white flex items-center justify-center font-bold text-xs">
+      {/* Top iOS Header Bar */}
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-black/5 z-10 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
             LC
           </div>
-          <span className="text-xs sm:text-sm font-bold tracking-wide text-slate-700 uppercase truncate max-w-[200px] sm:max-w-xs">
+          <span className="text-xs sm:text-sm font-bold tracking-wide text-slate-800 uppercase truncate max-w-[200px] sm:max-w-xs">
             {presentationTitle || 'Priority Bible Study'}
           </span>
         </div>
 
         {slide.badge && (
-          <span className="px-3 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shrink-0">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${theme.badgeBg} ${theme.badgeText} border ${theme.borderColor} shrink-0`}>
             {slide.badge}
           </span>
         )}
       </div>
 
-      {/* Main Slide Content Area */}
-      <div className="my-auto py-3.5 z-10 flex flex-col justify-start overflow-y-auto max-h-full space-y-4 pr-1">
+      {/* Main Slide Content Area (Hidden Scrollbars, Smooth iOS Scrolling) */}
+      <div className="my-auto py-3.5 z-10 flex flex-col justify-start overflow-y-auto max-h-full space-y-4 pr-0.5">
         
         {/* Constant Slide 1 (James 4:13-15) Reference Pinned at Top for Slides 2 through 15 */}
         {slide.pinnedScripture && (
-          <div className="bg-slate-50 rounded-xl border border-slate-200 p-3.5 sm:p-4 space-y-2.5 shrink-0">
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
-              <div className="flex items-center gap-2 text-blue-900 font-bold text-xs sm:text-sm">
-                <BookOpen className="w-4 h-4 text-emerald-700" />
+          <div className={`${theme.verseBg} ${theme.verseBorder} border rounded-2xl p-4 space-y-2.5 shrink-0`}>
+            <div className="flex items-center justify-between border-b border-black/5 pb-2">
+              <div className="flex items-center gap-2 text-slate-900 font-bold text-xs sm:text-sm">
+                <BookOpen className="w-4 h-4 text-slate-700" />
                 <span>{slide.pinnedScripture.ref}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsScriptureCollapsed(!isScriptureCollapsed)}
-                className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 font-semibold px-2 py-1 rounded-md hover:bg-slate-200/70 transition-colors"
+                className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 font-semibold px-2 py-1 rounded-lg bg-black/5 hover:bg-black/10 transition-colors"
               >
                 <span>{isScriptureCollapsed ? 'Show Full Text' : 'Hide Text'}</span>
                 {isScriptureCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
@@ -86,13 +222,13 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
             {!isScriptureCollapsed && (
               <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
                 {slide.pinnedScripture.verses.map((v) => (
-                  <div key={v.verseNum} className="space-y-1 border-t border-slate-200/60 pt-2 first:border-t-0 first:pt-0">
+                  <div key={v.verseNum} className="space-y-1 border-t border-black/5 pt-2 first:border-t-0 first:pt-0">
                     <p className="text-slate-900 font-bold text-xs sm:text-sm leading-relaxed">
-                      <span className="text-blue-900 mr-1.5 font-extrabold">{v.verseNum}.</span>
+                      <span className="font-extrabold mr-1.5 text-slate-950">{v.verseNum}.</span>
                       {v.telugu}
                     </p>
                     <p className="text-slate-600 font-medium text-xs sm:text-sm leading-relaxed italic">
-                      <span className="text-slate-500 mr-1.5">{v.verseNum}.</span>
+                      <span className="mr-1.5 text-slate-500">{v.verseNum}.</span>
                       {v.english}
                     </p>
                   </div>
@@ -102,13 +238,13 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           </div>
         )}
 
-        {/* Slide Title & Subtitle */}
+        {/* Slide Title & Subtitle with Extra Size */}
         <div className="space-y-1.5">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">
+          <h2 className={`text-xl sm:text-2xl md:text-3xl font-extrabold ${theme.titleColor} leading-tight`}>
             {slide.title}
           </h2>
           {slide.subtitle && (
-            <p className="text-sm sm:text-base text-emerald-800 font-bold">
+            <p className={`text-sm sm:text-base font-bold ${theme.subtitleColor}`}>
               {slide.subtitle}
             </p>
           )}
@@ -116,20 +252,20 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
         {/* Bilingual Question Card with Extra Size */}
         {(slide.englishText || slide.teluguText) && (
-          <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3">
+          <div className={`${theme.verseBg} ${theme.verseBorder} border p-4 sm:p-5 rounded-2xl space-y-3.5`}>
             {slide.englishText && (
               <div className="space-y-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
                   English
                 </span>
-                <p className="text-base sm:text-lg md:text-xl font-bold text-slate-900 leading-relaxed">
+                <p className={`text-base sm:text-lg md:text-xl font-bold ${theme.titleColor} leading-relaxed`}>
                   {slide.englishText}
                 </p>
               </div>
             )}
 
             {slide.teluguText && (
-              <div className="space-y-1 pt-2.5 border-t border-slate-200">
+              <div className="space-y-1 pt-2.5 border-t border-black/5">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
                   తెలుగు
                 </span>
@@ -143,20 +279,20 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
         {/* Expected Answer Card with Extra Size */}
         {slide.expectedAnswer && (
-          <div className="p-4 sm:p-5 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1.5">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+          <div className={`${theme.answerBg} ${theme.answerBorder} border p-4 sm:p-5 rounded-2xl space-y-1.5`}>
+            <span className={`text-xs font-extrabold uppercase tracking-wider ${theme.answerText} flex items-center gap-1.5`}>
+              <CheckCircle2 className="w-4 h-4" />
               <span>Expected Answer</span>
             </span>
-            <p className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 leading-relaxed">
+            <p className={`text-base sm:text-lg md:text-xl font-bold ${theme.answerText} leading-relaxed`}>
               {slide.expectedAnswer}
             </p>
           </div>
         )}
 
-        {/* Image Display */}
+        {/* Image Display Framed like the Photo Cards in Reference Image */}
         {slide.imageUrl && (
-          <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 max-h-60 sm:max-h-72 flex items-center justify-center">
+          <div className="rounded-2xl overflow-hidden border border-black/10 bg-black/5 max-h-60 sm:max-h-72 flex items-center justify-center">
             <img 
               src={slide.imageUrl} 
               alt={slide.title} 
@@ -173,13 +309,13 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
               slide.content.map((item, idx) => (
                 <div 
                   key={idx} 
-                  className="text-sm sm:text-base md:text-lg font-medium text-slate-800 leading-relaxed bg-slate-50 p-4 sm:p-4.5 rounded-xl border border-slate-200"
+                  className={`text-sm sm:text-base md:text-lg font-medium text-slate-800 leading-relaxed ${theme.verseBg} ${theme.verseBorder} border p-4 sm:p-4.5 rounded-2xl`}
                 >
                   {item}
                 </div>
               ))
             ) : (
-              <div className="text-sm sm:text-base md:text-lg font-medium text-slate-800 leading-relaxed bg-slate-50 p-4 sm:p-4.5 rounded-xl border border-slate-200">
+              <div className={`text-sm sm:text-base md:text-lg font-medium text-slate-800 leading-relaxed ${theme.verseBg} ${theme.verseBorder} border p-4 sm:p-4.5 rounded-2xl`}>
                 {slide.content}
               </div>
             )}
@@ -190,15 +326,15 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         {slide.type === 'two-column' && (
           <div className="space-y-3 pt-1">
             {slide.leftColumn && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-sm sm:text-base font-bold text-blue-900 flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-blue-800" />
+              <div className={`${theme.verseBg} ${theme.verseBorder} border p-4 sm:p-5 rounded-2xl space-y-2`}>
+                <h3 className={`text-sm sm:text-base font-bold ${theme.titleColor} flex items-center gap-2`}>
+                  <Brain className="w-4 h-4" />
                   <span>{slide.leftColumn.title}</span>
                 </h3>
                 <ul className="space-y-1.5 pl-1">
                   {slide.leftColumn.items.map((item, i) => (
                     <li key={i} className="text-sm sm:text-base text-slate-700 flex items-start gap-2 leading-relaxed">
-                      <span className="w-2 h-2 rounded-full bg-blue-900 shrink-0 mt-2" />
+                      <span className="w-2 h-2 rounded-full bg-slate-700 shrink-0 mt-2" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -207,15 +343,15 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
             )}
 
             {slide.rightColumn && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h3 className="text-sm sm:text-base font-bold text-emerald-800 flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-emerald-700" />
+              <div className={`${theme.verseBg} ${theme.verseBorder} border p-4 sm:p-5 rounded-2xl space-y-2`}>
+                <h3 className={`text-sm sm:text-base font-bold ${theme.subtitleColor} flex items-center gap-2`}>
+                  <Cpu className="w-4 h-4" />
                   <span>{slide.rightColumn.title}</span>
                 </h3>
                 <ul className="space-y-1.5 pl-1">
                   {slide.rightColumn.items.map((item, i) => (
                     <li key={i} className="text-sm sm:text-base text-slate-700 flex items-start gap-2 leading-relaxed">
-                      <span className="w-2 h-2 rounded-full bg-emerald-700 shrink-0 mt-2" />
+                      <span className="w-2 h-2 rounded-full bg-slate-700 shrink-0 mt-2" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -226,17 +362,17 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         )}
       </div>
 
-      {/* Slide Bottom Bar with Progress */}
-      <div className="pt-3 border-t border-slate-100 z-10 shrink-0 space-y-2">
-        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+      {/* Slide Bottom Bar with iOS Progress Indicator */}
+      <div className="pt-3 border-t border-black/5 z-10 shrink-0 space-y-2">
+        <div className="w-full bg-black/10 h-1.5 rounded-full overflow-hidden">
           <div 
-            className="bg-blue-900 h-full transition-all duration-300 rounded-full"
+            className={`${theme.accentBar} h-full transition-all duration-300 rounded-full`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
         <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600 font-bold">
           <span>Slide {slideIndex + 1} of {totalSlides}</span>
-          <span className="font-mono text-blue-900">{progressPercent}%</span>
+          <span className="font-mono text-slate-800">{progressPercent}%</span>
         </div>
       </div>
     </div>
