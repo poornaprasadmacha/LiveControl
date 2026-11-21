@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/shared/Navbar';
 import { socket } from '@/lib/socket';
-import { Presentation, HelpCircle, Lock, ArrowRight, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Presentation, HelpCircle, Lock, ArrowRight, AlertTriangle } from 'lucide-react';
 import { SAMPLE_PRESENTATION_TITLE } from '@/lib/samplePresentation';
 import { SAMPLE_QUIZ_TITLE } from '@/lib/sampleQuiz';
 
@@ -36,7 +36,6 @@ export default function CreateSessionPage() {
     setIsLoading(true);
     setError(null);
 
-    // Timeout safety fallback (5 seconds)
     const timer = setTimeout(() => {
       setIsLoading((currentlyLoading) => {
         if (currentlyLoading) {
@@ -49,7 +48,7 @@ export default function CreateSessionPage() {
       });
     }, 5000);
 
-    // 1. Try REST API endpoint first for instant room creation
+    // 1. Try REST API endpoint first
     try {
       const res = await fetch(`${socketServerUrl}/api/create-room`, {
         method: 'POST',
@@ -67,10 +66,10 @@ export default function CreateSessionPage() {
         }
       }
     } catch (httpErr) {
-      // If REST API fetch failed or server unreachable, fallback to Socket.IO
+      // Fallback to socket
     }
 
-    // 2. Fallback to Socket.IO emit
+    // 2. Fallback to Socket.IO
     if (!socket.connected) {
       socket.connect();
     }
@@ -88,30 +87,30 @@ export default function CreateSessionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg text-slate-900 dark:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg text-slate-800 dark:text-slate-100 flex flex-col justify-between">
       <Navbar />
 
       <main className="flex-1 max-w-xl w-full mx-auto px-4 py-12 flex flex-col justify-center">
-        <div className="bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8">
+        <div className="bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-6 sm:p-8 space-y-6">
           
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+          <div className="text-center space-y-1.5">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
               Create New Live Session
             </h1>
-            <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               Select session type and configure initial parameters.
             </p>
           </div>
 
           {/* Session Type Switcher */}
-          <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 dark:bg-brand-darkBg rounded-2xl border border-slate-200 dark:border-brand-darkBorder">
+          <div className="grid grid-cols-2 gap-2.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setSessionType('presentation')}
-              className={`py-3 px-4 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
+              className={`py-2.5 px-4 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all ${
                 sessionType === 'presentation'
-                  ? 'bg-brand-primary text-white shadow-md'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-brand-primary text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Presentation className="w-4 h-4" />
@@ -121,10 +120,10 @@ export default function CreateSessionPage() {
             <button
               type="button"
               onClick={() => setSessionType('quiz')}
-              className={`py-3 px-4 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
+              className={`py-2.5 px-4 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all ${
                 sessionType === 'quiz'
-                  ? 'bg-brand-secondary text-white shadow-md'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-brand-secondary text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <HelpCircle className="w-4 h-4" />
@@ -133,10 +132,10 @@ export default function CreateSessionPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleCreate} className="space-y-6">
+          <form onSubmit={handleCreate} className="space-y-5">
             
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 {sessionType === 'presentation' ? 'Presentation Title' : 'Quiz Title'}
               </label>
               <input
@@ -144,14 +143,41 @@ export default function CreateSessionPage() {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={sessionType === 'presentation' ? 'e.g. Introduction to AI' : 'e.g. AI Fundamentals Quiz'}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-brand-darkBorder bg-slate-50 dark:bg-brand-darkBg text-slate-900 dark:text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all"
+                placeholder={sessionType === 'presentation' ? 'e.g. Priority Bible Study' : 'e.g. AI Fundamentals Quiz'}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all"
               />
+
+              {sessionType === 'presentation' && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setTitle('Priority Bible Study')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      title === 'Priority Bible Study'
+                        ? 'bg-slate-200 dark:bg-slate-700 border-slate-400 dark:border-slate-500 text-slate-900 dark:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Priority Bible Study (32 Slides)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTitle('Introduction to Artificial Intelligence')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      title.includes('Artificial')
+                        ? 'bg-slate-200 dark:bg-slate-700 border-slate-400 dark:border-slate-500 text-slate-900 dark:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Intro to AI (8 Slides)
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-brand-secondary" />
                   <span>Admin PIN (Optional Custom PIN)</span>
                 </label>
@@ -162,20 +188,20 @@ export default function CreateSessionPage() {
                 placeholder="Enter PIN (or leave blank to use default)"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-brand-darkBorder bg-slate-50 dark:bg-brand-darkBg text-slate-900 dark:text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all"
               />
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                This PIN is verified server-side and protects your host dashboard.
+                Protects your host dashboard across sessions.
               </p>
             </div>
 
             {error && (
-              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-2">
-                <div className="flex items-center gap-2 font-bold text-amber-600 dark:text-amber-400">
+              <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>Backend Server Unreachable</span>
+                  <span>Connection Notice</span>
                 </div>
-                <p className="whitespace-pre-line text-[11px] font-medium leading-relaxed">
+                <p className="whitespace-pre-line text-[11px] leading-relaxed">
                   {error}
                 </p>
               </div>
@@ -184,7 +210,7 @@ export default function CreateSessionPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 bg-brand-primary hover:bg-brand-primaryDark text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 hover:shadow-2xl transition-all disabled:opacity-50"
+              className="w-full py-3.5 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
               {isLoading ? (
                 <span>Generating Room & Starting Session...</span>

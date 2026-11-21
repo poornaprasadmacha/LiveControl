@@ -1,5 +1,5 @@
 import { PresentationRoom, QuizRoom, Room, Viewer, Participant } from '../../types';
-import { SAMPLE_SLIDES, SAMPLE_PRESENTATION_TITLE } from '../../lib/samplePresentation';
+import { SAMPLE_SLIDES, SAMPLE_PRESENTATION_TITLE, getSlidesByTitle } from '../../lib/samplePresentation';
 import { SAMPLE_QUIZ_QUESTIONS, SAMPLE_QUIZ_TITLE } from '../../lib/sampleQuiz';
 
 export interface IRoomStore {
@@ -52,15 +52,17 @@ export class MemoryRoomStore implements IRoomStore {
     const now = Date.now();
 
     if (type === 'presentation') {
+      const roomTitle = title || SAMPLE_PRESENTATION_TITLE;
+      const slides = getSlidesByTitle(roomTitle);
       const room: PresentationRoom = {
         id: roomId,
         type: 'presentation',
-        title: title || SAMPLE_PRESENTATION_TITLE,
+        title: roomTitle,
         adminPin,
         adminToken,
         adminConnected: true,
         currentSlide: 1,
-        totalSlides: SAMPLE_SLIDES.length,
+        totalSlides: slides.length,
         isBlank: false,
         viewers: {},
         createdAt: now,

@@ -6,8 +6,7 @@ import { socket } from '@/lib/socket';
 import { PublicRoomState, PublicPresentationState, PublicQuizState } from '@/types';
 import { PresentationAdminDashboard } from '@/components/admin/PresentationAdminDashboard';
 import { QuizAdminDashboard } from '@/components/admin/QuizAdminDashboard';
-import { Lock, ShieldCheck, AlertCircle, RefreshCw, KeyRound, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { KeyRound, ArrowRight, RefreshCw } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const params = useParams();
@@ -95,7 +94,6 @@ export default function AdminDashboardPage() {
         setToken(res.token);
         setIsAuthenticated(true);
 
-        // Fetch room state
         socket.emit('joinRoom', { roomId, role: 'ADMIN', token: res.token }, (joinRes) => {
           if (joinRes.success && joinRes.state) {
             setRoomState(joinRes.state);
@@ -169,21 +167,21 @@ export default function AdminDashboardPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg flex flex-col justify-center items-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-3xl p-8 shadow-2xl space-y-6">
+        <div className="max-w-md w-full bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-7 space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-brand-primary text-white mx-auto flex items-center justify-center shadow-lg">
-              <KeyRound className="w-7 h-7" />
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 mx-auto flex items-center justify-center border border-slate-200 dark:border-slate-700">
+              <KeyRound className="w-6 h-6 text-brand-primary dark:text-slate-200" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
               Host Authentication
             </h1>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Enter Admin PIN to control room <strong className="font-mono text-brand-primary dark:text-brand-light">{roomId}</strong>
+              Enter Admin PIN to control room <strong className="font-mono text-slate-800 dark:text-slate-200">{roomId}</strong>
             </p>
           </div>
 
           <form onSubmit={handlePinSubmit} className="space-y-4">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 Admin Security PIN
               </label>
@@ -193,7 +191,7 @@ export default function AdminDashboardPage() {
                 placeholder="Enter PIN"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-brand-darkBorder bg-slate-50 dark:bg-brand-darkBg text-slate-900 dark:text-white font-mono font-bold text-center text-lg focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono font-bold text-center text-lg focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all"
               />
             </div>
 
@@ -206,7 +204,7 @@ export default function AdminDashboardPage() {
             <button
               type="submit"
               disabled={isAuthenticating}
-              className="w-full py-4 bg-brand-primary hover:bg-brand-primaryDark text-white font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              className="w-full py-3.5 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
               {isAuthenticating ? (
                 <span>Verifying PIN...</span>
@@ -231,8 +229,8 @@ export default function AdminDashboardPage() {
   if (!roomState) {
     return (
       <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg flex items-center justify-center p-4">
-        <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300 text-sm font-bold">
-          <RefreshCw className="w-5 h-5 animate-spin text-brand-primary" />
+        <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300 text-sm font-semibold">
+          <RefreshCw className="w-4 h-4 animate-spin text-brand-primary" />
           <span>Loading Dashboard State...</span>
         </div>
       </div>

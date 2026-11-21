@@ -2,13 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { SlideViewer } from '../presentation/SlideViewer';
-import { SAMPLE_SLIDES } from '@/lib/samplePresentation';
+import { getSlidesByTitle } from '@/lib/samplePresentation';
 import { EndSessionModal } from './EndSessionModal';
 import { ShareModal } from '../shared/ShareModal';
-import { VoiceControl } from '../shared/VoiceControl';
 import { 
   ChevronLeft, ChevronRight, EyeOff, Maximize, Share2, Trash2, Users, 
-  Play, RotateCcw, Keyboard, CheckCircle, Radio, Sparkles
+  Sparkles, Keyboard, Smartphone
 } from 'lucide-react';
 import { PublicPresentationState } from '@/types';
 
@@ -29,8 +28,9 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
   const [isEndModalOpen, setIsEndModalOpen] = useState(false);
   const [jumpSlideInput, setJumpSlideInput] = useState('');
 
+  const slides = getSlidesByTitle(state.title);
   const currentSlide = state.currentSlide;
-  const totalSlides = SAMPLE_SLIDES.length;
+  const totalSlides = slides.length;
 
   const handlePrev = () => {
     if (currentSlide > 1) {
@@ -61,10 +61,9 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
     }
   };
 
-  // Requirement 24: Admin Keyboard Shortcuts
+  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't capture when typing in inputs
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
         return;
       }
@@ -95,21 +94,21 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
   }, [currentSlide, totalSlides]);
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-brand-darkBg text-slate-900 dark:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg text-slate-800 dark:text-slate-100 flex flex-col justify-between">
       
       {/* Top Admin Header */}
-      <header className="bg-white dark:bg-brand-darkCard border-b border-sky-100 dark:border-brand-darkBorder px-4 sm:px-8 py-3 sticky top-0 z-30 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+      <header className="bg-white dark:bg-brand-darkCard border-b border-slate-200 dark:border-brand-darkBorder px-4 sm:px-8 py-3 sticky top-0 z-30 flex flex-wrap items-center justify-between gap-4">
         
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-brand-primary text-white flex items-center justify-center font-black text-base shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand-primary text-white flex items-center justify-center font-bold text-sm">
             LC
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white">
                 Presentation Dashboard
               </span>
-              <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-sky-100 dark:bg-brand-darkBg text-brand-primary dark:text-brand-light font-bold">
+              <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border border-slate-200 dark:border-slate-700">
                 {state.id}
               </span>
             </div>
@@ -120,48 +119,45 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         </div>
 
         {/* Status Indicators & Action Buttons */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           
-          {/* Requirement 64: LIVE status indicator */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+          {/* LIVE status indicator */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>🟢 LIVE</span>
+            <span>LIVE</span>
           </div>
 
-          {/* Requirement 26: Viewer Count */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-brand-darkBg text-slate-700 dark:text-slate-200 text-xs font-bold border border-sky-100 dark:border-brand-darkBorder">
-            <Users className="w-4 h-4 text-brand-secondary" />
-            <span>👥 {state.viewerCount} Viewers</span>
+          {/* Viewer Count */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+            <Users className="w-3.5 h-3.5 text-brand-secondary" />
+            <span>{state.viewerCount} Viewers</span>
           </div>
 
-          {/* Real-time Voice Share Widget */}
-          <VoiceControl roomId={state.id} role="ADMIN" />
-
-          {/* Requirement 13: Share Button */}
+          {/* Share Button */}
           <button
             onClick={() => setIsShareOpen(true)}
-            className="px-3.5 py-1.5 rounded-xl bg-brand-secondary hover:bg-brand-secondaryDark text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition-all"
           >
             <Share2 className="w-3.5 h-3.5" />
-            <span>🔗 Share</span>
+            <span>Share</span>
           </button>
 
           {/* Fullscreen button */}
           <button
             onClick={toggleFullscreen}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-brand-darkBg dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-brand-darkBorder transition-colors"
+            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-colors"
             title="Toggle Fullscreen"
           >
             <Maximize className="w-4 h-4" />
           </button>
 
-          {/* Requirement 4: Highly visible END & DELETE SESSION button */}
+          {/* END & DELETE SESSION button */}
           <button
             onClick={() => setIsEndModalOpen(true)}
-            className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition-all"
+            className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all"
           >
-            <Trash2 className="w-4 h-4" />
-            <span>END & DELETE SESSION</span>
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>End Session</span>
           </button>
         </div>
       </header>
@@ -169,15 +165,19 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
       {/* Main Dashboard Grid */}
       <main className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
         
-        {/* Left Sidebar: Slide Thumbnails */}
-        <div className="lg:col-span-3 bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-2xl p-4 shadow-sm flex flex-col max-h-[600px] overflow-hidden">
-          <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center justify-between">
-            <span>Slide Deck ({totalSlides})</span>
-            <span className="text-brand-primary dark:text-brand-light font-mono">Slide {currentSlide}</span>
-          </h3>
+        {/* Left Sidebar: Slide Deck Thumbnails */}
+        <div className="lg:col-span-3 bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-4 flex flex-col max-h-[640px] overflow-hidden">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Slide Deck ({totalSlides})
+            </h3>
+            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+              {currentSlide} / {totalSlides}
+            </span>
+          </div>
 
-          <div className="space-y-2.5 overflow-y-auto pr-1 flex-1">
-            {SAMPLE_SLIDES.map((slide, idx) => {
+          <div className="space-y-2 overflow-y-auto pr-1 flex-1">
+            {slides.map((slide, idx) => {
               const slideNum = idx + 1;
               const isActive = slideNum === currentSlide;
 
@@ -185,10 +185,10 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
                 <button
                   key={slide.id}
                   onClick={() => onSlideChange(slideNum)}
-                  className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex items-start gap-3 ${
+                  className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex items-start gap-2.5 ${
                     isActive
-                      ? 'bg-sky-50 dark:bg-brand-darkBg border-brand-primary dark:border-brand-light shadow-sm ring-1 ring-brand-primary'
-                      : 'bg-white dark:bg-brand-darkBg/50 border-slate-100 dark:border-brand-darkBorder hover:border-sky-300 dark:hover:border-slate-700'
+                      ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 font-bold'
+                      : 'bg-white dark:bg-brand-darkCard border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                   }`}
                 >
                   <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] shrink-0 ${
@@ -197,10 +197,10 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
                     {slideNum}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className={`font-bold truncate ${isActive ? 'text-brand-primary dark:text-brand-light' : 'text-slate-800 dark:text-slate-200'}`}>
+                    <p className={`truncate text-xs ${isActive ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-700 dark:text-slate-300'}`}>
                       {slide.title}
                     </p>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 block truncate">
                       {slide.type}
                     </span>
                   </div>
@@ -210,50 +210,62 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
           </div>
         </div>
 
-        {/* Center Area: Large Current Slide Preview */}
+        {/* Center Area: Vertical Phone Screen Preview */}
         <div className="lg:col-span-6 flex flex-col items-center justify-center gap-4">
-          <div className="w-full relative shadow-2xl rounded-2xl overflow-hidden">
-            <SlideViewer currentSlide={currentSlide} isBlank={state.isBlank} />
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Mobile Vertical View (Audience Screen)</span>
+          </div>
+
+          {/* Vertical Mobile Frame */}
+          <div className="w-full max-w-sm mx-auto aspect-[9/16] min-h-[540px] max-h-[640px] flex flex-col justify-center">
+            <SlideViewer 
+              currentSlide={currentSlide} 
+              isBlank={state.isBlank}
+              presentationTitle={state.title}
+              slides={slides}
+              className="h-full border border-slate-200 dark:border-brand-darkBorder rounded-2xl"
+            />
           </div>
 
           {/* Quick Action Control Strip */}
-          <div className="w-full bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+          <div className="w-full max-w-sm mx-auto bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2">
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={handlePrev}
                 disabled={currentSlide <= 1}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-brand-darkBg dark:hover:bg-slate-800 disabled:opacity-40 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center gap-1 transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center gap-1 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span>Previous</span>
+                <span>Prev</span>
               </button>
 
               <button
                 onClick={handleNext}
                 disabled={currentSlide >= totalSlides}
-                className="px-4 py-2 rounded-xl bg-brand-primary hover:bg-brand-primaryDark disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1 shadow-md transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-brand-primary hover:bg-brand-primaryDark disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1 transition-colors"
               >
                 <span>Next</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Blank Screen Toggle Button */}
+            {/* Blank Screen Toggle */}
             <button
               onClick={onToggleBlank}
-              className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
                 state.isBlank
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-md'
-                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-brand-darkBg text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-brand-darkBorder'
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
               }`}
             >
-              <EyeOff className="w-4 h-4" />
-              <span>{state.isBlank ? 'Resume Screen' : 'Blank Screen'}</span>
+              <EyeOff className="w-3.5 h-3.5" />
+              <span>{state.isBlank ? 'Resume' : 'Blank'}</span>
             </button>
 
-            {/* Jump to Slide Form */}
-            <form onSubmit={handleJump} className="flex items-center gap-1.5">
+            {/* Jump to Slide */}
+            <form onSubmit={handleJump} className="flex items-center gap-1">
               <input
                 type="number"
                 min="1"
@@ -261,11 +273,11 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
                 placeholder="#"
                 value={jumpSlideInput}
                 onChange={(e) => setJumpSlideInput(e.target.value)}
-                className="w-14 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-brand-darkBorder bg-slate-50 dark:bg-brand-darkBg text-xs text-center font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
+                className="w-11 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs text-center font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
               />
               <button
                 type="submit"
-                className="px-3 py-1.5 bg-sky-100 dark:bg-brand-darkBg text-brand-primary dark:text-brand-light font-bold text-xs rounded-lg hover:bg-sky-200 transition-colors"
+                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
               >
                 Go
               </button>
@@ -273,29 +285,29 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
           </div>
         </div>
 
-        {/* Right Sidebar: Session Info & Keyboard Shortcuts */}
+        {/* Right Sidebar: Overview & Shortcuts */}
         <div className="lg:col-span-3 space-y-4">
           
-          <div className="bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-2xl p-5 shadow-sm space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-secondary" />
+          <div className="bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-4 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-brand-secondary" />
               <span>Session Overview</span>
             </h3>
 
-            <div className="space-y-3 text-xs">
-              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-brand-darkBorder">
-                <span className="text-slate-500">Room ID:</span>
-                <span className="font-mono font-bold text-brand-primary dark:text-brand-light">{state.id}</span>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500">Room Code:</span>
+                <span className="font-mono font-bold text-brand-primary dark:text-slate-200">{state.id}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-brand-darkBorder">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                 <span className="text-slate-500">Active Viewers:</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">{state.viewerCount}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-brand-darkBorder">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                 <span className="text-slate-500">Current Slide:</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">{currentSlide} / {totalSlides}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-brand-darkBorder">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                 <span className="text-slate-500">Display State:</span>
                 <span className={`font-bold ${state.isBlank ? 'text-amber-500' : 'text-emerald-500'}`}>
                   {state.isBlank ? 'BLANKED' : 'ACTIVE'}
@@ -305,31 +317,31 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
           </div>
 
           {/* Keyboard Shortcuts Card */}
-          <div className="bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-2xl p-5 shadow-sm space-y-3">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-              <Keyboard className="w-4 h-4 text-brand-primary" />
-              <span>Keyboard Shortcuts</span>
+          <div className="bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-4 space-y-2.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Keyboard className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+              <span>Keyboard Controls</span>
             </h3>
 
             <div className="space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
               <div className="flex justify-between">
                 <span>Next Slide:</span>
-                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-brand-darkBg border rounded font-mono font-bold">→</kbd>
+                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded font-mono font-bold">→</kbd>
               </div>
               <div className="flex justify-between">
                 <span>Previous Slide:</span>
-                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-brand-darkBg border rounded font-mono font-bold">←</kbd>
+                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded font-mono font-bold">←</kbd>
               </div>
               <div className="flex justify-between">
                 <span>Blank Screen:</span>
-                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-brand-darkBg border rounded font-mono font-bold">B</kbd>
+                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded font-mono font-bold">B</kbd>
               </div>
               <div className="flex justify-between">
                 <span>Fullscreen:</span>
-                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-brand-darkBg border rounded font-mono font-bold">F</kbd>
+                <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded font-mono font-bold">F</kbd>
               </div>
               <div className="flex justify-between">
-                <span>First / Last Slide:</span>
+                <span>First / Last:</span>
                 <span className="font-mono font-bold">Home / End</span>
               </div>
             </div>

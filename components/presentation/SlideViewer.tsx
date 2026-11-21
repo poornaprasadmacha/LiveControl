@@ -1,233 +1,239 @@
 'use client';
 
-import React from 'react';
-import { SAMPLE_SLIDES, SlideContent } from '@/lib/samplePresentation';
-import { Sparkles, Brain, Cpu, Database, Lightbulb, CheckCircle2, Quote, Award } from 'lucide-react';
+import React, { useState } from 'react';
+import { SlideContent, getSlidesByTitle } from '@/lib/samplePresentation';
+import { 
+  Sparkles, Brain, Cpu, CheckCircle2, Quote, Award, BookOpen, 
+  HelpCircle, ChevronDown, ChevronUp, Image as ImageIcon 
+} from 'lucide-react';
 
 interface SlideViewerProps {
   currentSlide: number; // 1-indexed
   isBlank?: boolean;
+  className?: string;
+  presentationTitle?: string;
+  slides?: SlideContent[];
 }
 
-export const SlideViewer: React.FC<SlideViewerProps> = ({ currentSlide, isBlank }) => {
-  const slideIndex = Math.max(1, Math.min(currentSlide, SAMPLE_SLIDES.length)) - 1;
-  const slide: SlideContent = SAMPLE_SLIDES[slideIndex];
+export const SlideViewer: React.FC<SlideViewerProps> = ({ 
+  currentSlide, 
+  isBlank,
+  className = '',
+  presentationTitle,
+  slides: customSlides
+}) => {
+  const [isScriptureCollapsed, setIsScriptureCollapsed] = useState(false);
+  const slides = customSlides || getSlidesByTitle(presentationTitle);
+  const totalSlides = slides.length;
+  const slideIndex = Math.max(1, Math.min(currentSlide, totalSlides)) - 1;
+  const slide: SlideContent = slides[slideIndex] || slides[0];
+  const progressPercent = Math.round(((slideIndex + 1) / totalSlides) * 100);
 
   if (isBlank) {
     return (
-      <div className="w-full h-full min-h-[400px] aspect-[16/9] bg-black text-white flex flex-col items-center justify-center rounded-2xl border border-gray-800 shadow-2xl transition-all duration-300">
-        <span className="text-gray-600 text-sm font-medium tracking-widest uppercase">Screen Blanked by Host</span>
+      <div className={`w-full h-full min-h-[520px] bg-slate-950 text-slate-400 flex flex-col items-center justify-center p-8 rounded-2xl border border-slate-800 transition-all duration-300 ${className}`}>
+        <div className="w-12 h-12 rounded-xl border border-slate-800 flex items-center justify-center mb-3 text-slate-600">
+          <BookOpen className="w-5 h-5" />
+        </div>
+        <span className="text-xs font-semibold tracking-widest uppercase text-slate-500">Screen Blanked by Host</span>
+        <p className="text-[11px] text-slate-600 mt-1">Presentation will resume shortly</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full aspect-[16/9] min-h-[380px] sm:min-h-[480px] bg-gradient-to-br from-white via-blue-50/50 to-sky-100/30 dark:from-brand-darkCard dark:via-brand-darkBg dark:to-brand-darkBorder text-slate-900 dark:text-white rounded-2xl border border-sky-100 dark:border-brand-darkBorder shadow-xl p-6 sm:p-10 md:p-12 flex flex-col justify-between relative overflow-hidden transition-all duration-300">
+    <div className={`w-full h-full min-h-[520px] bg-white dark:bg-brand-darkCard text-slate-800 dark:text-slate-100 rounded-2xl border border-slate-200/90 dark:border-brand-darkBorder p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${className}`}>
       
-      {/* Decorative top background elements */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-brand-light/30 dark:bg-brand-secondary/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-veryLight/40 dark:bg-brand-primary/10 rounded-full blur-2xl -ml-20 -mb-20 pointer-events-none" />
-
-      {/* Slide Header */}
-      <div className="flex items-center justify-between z-10">
+      {/* Top Slide Meta Bar */}
+      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800/80 z-10 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center font-bold text-sm shadow-md">
+          <div className="w-6 h-6 rounded-md bg-brand-primary text-white flex items-center justify-center font-bold text-[10px]">
             LC
           </div>
-          <span className="text-xs font-bold tracking-widest text-brand-primary dark:text-brand-light uppercase">
-            LiveControl
+          <span className="text-[11px] font-bold tracking-wider text-slate-600 dark:text-slate-300 uppercase truncate max-w-[170px] sm:max-w-xs">
+            {presentationTitle || 'Priority Bible Study'}
           </span>
         </div>
 
         {slide.badge && (
-          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-brand-primary/10 text-brand-primary dark:bg-brand-light/20 dark:text-brand-light border border-brand-primary/20 dark:border-brand-light/30">
+          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
             {slide.badge}
           </span>
         )}
       </div>
 
-      {/* Slide Main Content */}
-      <div className="my-auto py-4 z-10 flex flex-col justify-center">
-        {/* Render Title Slide */}
-        {slide.type === 'title' && (
-          <div className="text-center space-y-6 max-w-4xl mx-auto py-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-light/50 dark:bg-brand-secondary/20 text-brand-primary dark:text-brand-light font-medium text-sm border border-brand-primary/20">
-              <Sparkles className="w-4 h-4 text-brand-secondary animate-pulse" />
-              <span>Interactive Presentation Session</span>
+      {/* Main Slide Content Area */}
+      <div className="my-auto py-3 z-10 flex flex-col justify-start overflow-y-auto max-h-full space-y-3.5 pr-0.5">
+        
+        {/* Constant Slide 1 (James 4:13-15) Reference Pinned at Top for Slides 2 through 15 */}
+        {slide.pinnedScripture && (
+          <div className="bg-slate-50/95 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 p-3 space-y-2 shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-brand-primary dark:text-slate-200 font-bold text-xs">
+                <BookOpen className="w-3.5 h-3.5 text-brand-secondary" />
+                <span>{slide.pinnedScripture.ref}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsScriptureCollapsed(!isScriptureCollapsed)}
+                className="text-[10px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-0.5 font-medium px-1.5 py-0.5 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+              >
+                <span>{isScriptureCollapsed ? 'Expand Text' : 'Compact Text'}</span>
+                {isScriptureCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+              </button>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              {slide.title}
-            </h1>
-            {slide.subtitle && (
-              <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 font-normal leading-relaxed max-w-2xl mx-auto">
-                {slide.subtitle}
-              </p>
-            )}
-          </div>
-        )}
 
-        {/* Render Text Slide */}
-        {slide.type === 'text' && (
-          <div className="space-y-6 max-w-4xl">
-            <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-                {slide.title}
-              </h2>
-              {slide.subtitle && (
-                <p className="text-sm sm:text-base text-brand-secondary dark:text-brand-light font-medium">
-                  {slide.subtitle}
-                </p>
-              )}
-            </div>
-            <div className="space-y-4">
-              {Array.isArray(slide.content) ? (
-                slide.content.map((paragraph, idx) => (
-                  <p key={idx} className="text-base sm:text-lg text-slate-700 dark:text-slate-200 leading-relaxed bg-white/60 dark:bg-brand-darkBg/60 p-4 rounded-xl border border-sky-100/80 dark:border-brand-darkBorder">
-                    {paragraph}
-                  </p>
-                ))
-              ) : (
-                <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 leading-relaxed bg-white/60 dark:bg-brand-darkBg/60 p-4 rounded-xl border border-sky-100/80 dark:border-brand-darkBorder">
-                  {slide.content}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Render Bullet Slide */}
-        {slide.type === 'bullet' && (
-          <div className="space-y-6 max-w-4xl">
-            <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-                {slide.title}
-              </h2>
-              {slide.subtitle && (
-                <p className="text-sm sm:text-base text-brand-secondary dark:text-brand-light font-medium">
-                  {slide.subtitle}
-                </p>
-              )}
-            </div>
-            <div className="grid grid-cols-1 gap-3">
-              {Array.isArray(slide.content) &&
-                slide.content.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 dark:bg-brand-darkBg/80 border border-sky-100 dark:border-brand-darkBorder shadow-sm">
-                    <CheckCircle2 className="w-5 h-5 text-brand-secondary shrink-0 mt-0.5" />
-                    <span className="text-sm sm:text-base text-slate-800 dark:text-slate-100 font-medium">
-                      {item}
-                    </span>
+            {!isScriptureCollapsed && (
+              <div className="space-y-2 text-[11px] leading-relaxed max-h-40 overflow-y-auto pr-1">
+                {slide.pinnedScripture.verses.map((v) => (
+                  <div key={v.verseNum} className="space-y-0.5 border-t border-slate-200/60 dark:border-slate-800/80 pt-1.5 first:border-t-0 first:pt-0">
+                    <p className="text-slate-900 dark:text-slate-100 font-medium">
+                      <strong className="text-brand-primary dark:text-teal-400 mr-1">{v.verseNum}.</strong>
+                      {v.telugu}
+                    </p>
+                    <p className="text-slate-600 dark:text-slate-400 italic">
+                      <strong className="text-slate-500 mr-1">{v.verseNum}.</strong>
+                      {v.english}
+                    </p>
                   </div>
                 ))}
-            </div>
-          </div>
-        )}
-
-        {/* Render Two Column Slide */}
-        {slide.type === 'two-column' && (
-          <div className="space-y-6">
-            <div className="space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-                {slide.title}
-              </h2>
-              {slide.subtitle && (
-                <p className="text-sm sm:text-base text-brand-secondary dark:text-brand-light font-medium">
-                  {slide.subtitle}
-                </p>
-              )}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {slide.leftColumn && (
-                <div className="p-5 rounded-xl bg-white/80 dark:bg-brand-darkBg/90 border border-brand-primary/20 dark:border-brand-darkBorder shadow-sm space-y-3">
-                  <h3 className="text-lg font-bold text-brand-primary dark:text-brand-light flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-brand-primary dark:text-brand-light" />
-                    {slide.leftColumn.title}
-                  </h3>
-                  <ul className="space-y-2">
-                    {slide.leftColumn.items.map((item, i) => (
-                      <li key={i} className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-primary shrink-0 mt-2" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {slide.rightColumn && (
-                <div className="p-5 rounded-xl bg-white/80 dark:bg-brand-darkBg/90 border border-brand-secondary/30 dark:border-brand-darkBorder shadow-sm space-y-3">
-                  <h3 className="text-lg font-bold text-brand-secondary dark:text-teal-400 flex items-center gap-2">
-                    <Cpu className="w-5 h-5 text-brand-secondary dark:text-teal-400" />
-                    {slide.rightColumn.title}
-                  </h3>
-                  <ul className="space-y-2">
-                    {slide.rightColumn.items.map((item, i) => (
-                      <li key={i} className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-secondary shrink-0 mt-2" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Render Section Divider */}
-        {slide.type === 'section' && (
-          <div className="text-center py-8 space-y-4">
-            <span className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-brand-primary text-white">
-              Section Header
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white">
-              {slide.title}
-            </h2>
-            {slide.subtitle && (
-              <p className="text-lg text-slate-600 dark:text-slate-300 font-medium max-w-xl mx-auto">
-                {slide.subtitle}
-              </p>
+              </div>
             )}
           </div>
         )}
 
-        {/* Render Quote Slide */}
-        {slide.type === 'quote' && (
-          <div className="max-w-3xl mx-auto text-center space-y-6 py-6">
-            <Quote className="w-12 h-12 text-brand-secondary mx-auto opacity-75" />
-            <blockquote className="text-xl sm:text-2xl font-serif italic text-slate-800 dark:text-slate-100 leading-relaxed">
-              "{slide.content}"
-            </blockquote>
-            {slide.quoteAuthor && (
-              <p className="text-sm font-bold text-brand-primary dark:text-brand-light uppercase tracking-widest">
-                — {slide.quoteAuthor}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Render Thank-You Slide */}
-        {slide.type === 'thank-you' && (
-          <div className="text-center space-y-6 max-w-2xl mx-auto py-6">
-            <Award className="w-16 h-16 text-brand-secondary mx-auto" />
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-              {slide.title}
-            </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-300 font-medium">
+        {/* Slide Title & Subtitle */}
+        <div className="space-y-1">
+          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white leading-snug">
+            {slide.title}
+          </h2>
+          {slide.subtitle && (
+            <p className="text-xs text-brand-secondary dark:text-teal-400 font-semibold">
               {slide.subtitle}
             </p>
-            <div className="pt-4 flex items-center justify-center gap-2">
-              <span className="px-4 py-2 rounded-xl bg-brand-primary text-white text-sm font-semibold shadow-md">
-                LiveControl Room Active
-              </span>
-            </div>
+          )}
+        </div>
+
+        {/* Bilingual Question Card */}
+        {(slide.englishText || slide.teluguText) && (
+          <div className="bg-slate-50 dark:bg-slate-900/70 p-3.5 sm:p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 space-y-2.5">
+            {slide.englishText && (
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">English</span>
+                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">
+                  {slide.englishText}
+                </p>
+              </div>
+            )}
+
+            {slide.teluguText && (
+              <div className="space-y-0.5 pt-1.5 border-t border-slate-200/70 dark:border-slate-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">తెలుగు</span>
+                <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">
+                  {slide.teluguText}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Expected Answer Card */}
+        {slide.expectedAnswer && (
+          <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-900/60 space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Expected Answer</span>
+            </span>
+            <p className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
+              {slide.expectedAnswer}
+            </p>
+          </div>
+        )}
+
+        {/* Image Display */}
+        {slide.imageUrl && (
+          <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 max-h-56 sm:max-h-64 flex items-center justify-center">
+            <img 
+              src={slide.imageUrl} 
+              alt={slide.title} 
+              loading="lazy"
+              className="w-full h-full object-cover max-h-56 sm:max-h-64"
+            />
+          </div>
+        )}
+
+        {/* Content Paragraphs / Verses */}
+        {slide.content && (
+          <div className="space-y-2">
+            {Array.isArray(slide.content) ? (
+              slide.content.map((item, idx) => (
+                <div 
+                  key={idx} 
+                  className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-slate-50/80 dark:bg-slate-900/60 p-3 sm:p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800"
+                >
+                  {item}
+                </div>
+              ))
+            ) : (
+              <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-slate-50/80 dark:bg-slate-900/60 p-3 sm:p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                {slide.content}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Two-Column Stacked Cards */}
+        {slide.type === 'two-column' && (
+          <div className="space-y-2.5 pt-1">
+            {slide.leftColumn && (
+              <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 space-y-1.5">
+                <h3 className="text-xs font-bold text-brand-primary dark:text-slate-200 flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-brand-primary dark:text-teal-400" />
+                  <span>{slide.leftColumn.title}</span>
+                </h3>
+                <ul className="space-y-1 pl-1">
+                  {slide.leftColumn.items.map((item, i) => (
+                    <li key={i} className="text-xs text-slate-600 dark:text-slate-300 flex items-start gap-1.5 leading-relaxed">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary dark:bg-teal-400 shrink-0 mt-1.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {slide.rightColumn && (
+              <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 space-y-1.5">
+                <h3 className="text-xs font-bold text-brand-secondary dark:text-slate-200 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-brand-secondary dark:text-teal-400" />
+                  <span>{slide.rightColumn.title}</span>
+                </h3>
+                <ul className="space-y-1 pl-1">
+                  {slide.rightColumn.items.map((item, i) => (
+                    <li key={i} className="text-xs text-slate-600 dark:text-slate-300 flex items-start gap-1.5 leading-relaxed">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-secondary dark:bg-teal-400 shrink-0 mt-1.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Slide Footer */}
-      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium border-t border-sky-100 dark:border-brand-darkBorder pt-3 z-10">
-        <span>Slide {slideIndex + 1} of {SAMPLE_SLIDES.length}</span>
-        <span>Hosted via LiveControl</span>
+      {/* Slide Bottom Bar with Progress */}
+      <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800/80 z-10 shrink-0 space-y-1.5">
+        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+          <div 
+            className="bg-brand-primary dark:bg-teal-500 h-full transition-all duration-300 rounded-full"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+          <span>Slide {slideIndex + 1} of {totalSlides}</span>
+          <span className="font-mono">{progressPercent}%</span>
+        </div>
       </div>
     </div>
   );

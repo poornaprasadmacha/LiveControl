@@ -11,20 +11,32 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          primary: '#023E8A',
-          primaryDark: '#012A5E',
-          secondary: '#008080',
-          secondaryDark: '#005C5C',
-          light: '#B5E0F2',
-          veryLight: '#BCE8F4',
-          bgLight: '#F0F9FF',
-          darkBg: '#071A2B',
-          darkCard: '#0E283E',
-          darkBorder: '#1A3C5B',
+          primary: '#1e3a5f',
+          primaryDark: '#132742',
+          primaryLight: '#2c5282',
+          secondary: '#0f766e',
+          secondaryDark: '#115e59',
+          secondaryLight: '#14b8a6',
+          light: '#e2e8f0',
+          veryLight: '#f1f5f9',
+          bgLight: '#f8fafc',
+          darkBg: '#090d16',
+          darkCard: '#111726',
+          darkBorder: '#1e293b',
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      boxShadow: {
+        none: 'none',
+        sm: 'none',
+        DEFAULT: 'none',
+        md: 'none',
+        lg: 'none',
+        xl: 'none',
+        '2xl': 'none',
+        inner: 'none',
       },
       keyframes: {
         pulseSlow: {

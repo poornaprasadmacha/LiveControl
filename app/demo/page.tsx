@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Navbar } from '@/components/shared/Navbar';
 import { socket } from '@/lib/socket';
-import { Presentation, HelpCircle, Sparkles, ExternalLink, ArrowRight } from 'lucide-react';
+import { Presentation, HelpCircle, Sparkles, ExternalLink } from 'lucide-react';
 import { SAMPLE_PRESENTATION_TITLE } from '@/lib/samplePresentation';
 import { SAMPLE_QUIZ_TITLE } from '@/lib/sampleQuiz';
 
@@ -44,60 +44,60 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg text-slate-900 dark:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-brand-bgLight dark:bg-brand-darkBg text-slate-800 dark:text-slate-100 flex flex-col justify-between">
       <Navbar />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-12 space-y-8">
         
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-brand-darkBg text-brand-secondary text-xs font-bold border border-teal-200">
-            <Sparkles className="w-4 h-4 text-brand-secondary animate-pulse" />
-            <span>Interactive Multi-Tab Simulator</span>
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+            <Sparkles className="w-3.5 h-3.5 text-brand-secondary" />
+            <span>Interactive Simulator</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
-            LiveControl Interactive Demo
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+            LiveControl Simulator
           </h1>
-          <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-            Test real-time slide synchronization and live quiz controls by opening host and viewer windows side by side.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+            Test real-time vertical slide synchronization and live quiz controls by opening host and audience windows.
           </p>
         </div>
 
         {/* Demo Launch Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           
-          <div className="bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-3xl p-6 shadow-xl space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand-light/60 dark:bg-brand-secondary/20 text-brand-primary dark:text-brand-light flex items-center justify-center">
-              <Presentation className="w-6 h-6" />
+          <div className="bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-6 space-y-3.5">
+            <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+              <Presentation className="w-5 h-5 text-brand-primary dark:text-slate-200" />
             </div>
-            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Demo Presentation
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              Vertical Presentation Demo
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              Pre-loaded with 8 sample slides on "Introduction to AI". Change slides on the host window and observe instant audience updates.
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Pre-loaded with 32 vertical slides on "Priority Bible Study" (with pinned top scripture reference for slides 2–15). Experience the audience vertical view with zero header and footer distractions.
             </p>
             <button
               onClick={() => createDemoRoom('presentation')}
               disabled={isLoading}
-              className="w-full py-3 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-xs rounded-xl shadow-md transition-all"
+              className="w-full py-2.5 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-xs rounded-xl transition-all"
             >
               Launch Presentation Demo
             </button>
           </div>
 
-          <div className="bg-white dark:bg-brand-darkCard border border-sky-100 dark:border-brand-darkBorder rounded-3xl p-6 shadow-xl space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-brand-darkBg text-brand-secondary flex items-center justify-center">
-              <HelpCircle className="w-6 h-6" />
+          <div className="bg-white dark:bg-brand-darkCard border border-slate-200 dark:border-brand-darkBorder rounded-2xl p-6 space-y-3.5">
+            <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+              <HelpCircle className="w-5 h-5 text-brand-secondary" />
             </div>
-            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Demo Live Quiz
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              Live Quiz Demo
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Pre-loaded with 10 questions on "AI Fundamentals". Open participant windows, submit answers, and reveal live leaderboards.
             </p>
             <button
               onClick={() => createDemoRoom('quiz')}
               disabled={isLoading}
-              className="w-full py-3 bg-brand-secondary hover:bg-brand-secondaryDark text-white font-bold text-xs rounded-xl shadow-md transition-all"
+              className="w-full py-2.5 bg-brand-secondary hover:bg-brand-secondaryDark text-white font-bold text-xs rounded-xl transition-all"
             >
               Launch Quiz Demo
             </button>
@@ -106,35 +106,35 @@ export default function DemoPage() {
 
         {/* Active Demo Window Controls */}
         {activeRoomId && (
-          <div className="bg-white dark:bg-brand-darkCard border-2 border-brand-primary rounded-3xl p-8 shadow-2xl space-y-6 text-center animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-brand-darkCard border border-slate-300 dark:border-slate-700 rounded-2xl p-6 space-y-4 text-center">
             <div className="space-y-1">
-              <span className="text-xs font-black uppercase tracking-widest text-brand-secondary">
-                Demo Room Ready!
+              <span className="text-[11px] font-bold uppercase tracking-wider text-brand-secondary">
+                Demo Room Ready
               </span>
-              <h2 className="text-2xl font-black font-mono text-brand-primary dark:text-brand-light">
+              <h2 className="text-xl font-mono font-bold text-slate-900 dark:text-white">
                 {activeRoomId}
               </h2>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto font-medium">
-              Click below to open the Admin Host Dashboard in one tab, and the Audience / Participant view in a second tab!
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto font-medium">
+              Open the Host Dashboard in one tab, and the Audience view in a second tab.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
               <button
                 onClick={openAdminTab}
-                className="w-full sm:w-auto px-6 py-3.5 bg-brand-primary hover:bg-brand-primaryDark text-white font-black text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+                className="w-full sm:w-auto px-5 py-2.5 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>Open Admin Dashboard (Tab 1)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open Admin Dashboard</span>
               </button>
 
               <button
                 onClick={openViewerTab}
-                className="w-full sm:w-auto px-6 py-3.5 bg-brand-secondary hover:bg-brand-secondaryDark text-white font-black text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition-all"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>Open Audience View (Tab 2)</span>
+                <ExternalLink className="w-3.5 h-3.5 text-brand-secondary" />
+                <span>Open Audience View</span>
               </button>
             </div>
           </div>
