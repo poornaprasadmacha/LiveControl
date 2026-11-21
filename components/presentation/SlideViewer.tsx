@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { SlideContent, getSlidesByTitle } from '@/lib/samplePresentation';
 import { 
-  Sparkles, Brain, Cpu, CheckCircle2, Award, BookOpen, 
+  Brain, Cpu, CheckCircle2, BookOpen, 
   ChevronDown, ChevronUp
 } from 'lucide-react';
 
@@ -32,7 +32,6 @@ interface SlideColorTheme {
 
 // 7 Soft, Eye-Soothing Pastel Themes based on user's reference photo
 const SLIDE_THEMES: Record<string, SlideColorTheme> = {
-  // 1. Sage / Mint Green (James 4 Scripture & Opening)
   mint: {
     cardBg: 'bg-[#f4fbf6]',
     borderColor: 'border-[#bbf7d0]',
@@ -40,14 +39,13 @@ const SLIDE_THEMES: Record<string, SlideColorTheme> = {
     badgeText: 'text-[#166534]',
     titleColor: 'text-[#14532d]',
     subtitleColor: 'text-[#15803d]',
-    verseBg: 'bg-white/90',
+    verseBg: 'bg-white/95',
     verseBorder: 'border-[#bbf7d0]',
     accentBar: 'bg-[#16a34a]',
     answerBg: 'bg-[#dcfce7]',
     answerBorder: 'border-[#86efac]',
     answerText: 'text-[#14532d]',
   },
-  // 2. Soft Sky Blue (Mist of Life & Uncertainty of Tomorrow)
   sky: {
     cardBg: 'bg-[#f0f9ff]',
     borderColor: 'border-[#bae6fd]',
@@ -55,14 +53,13 @@ const SLIDE_THEMES: Record<string, SlideColorTheme> = {
     badgeText: 'text-[#075985]',
     titleColor: 'text-[#0c4a6e]',
     subtitleColor: 'text-[#0284c7]',
-    verseBg: 'bg-white/90',
+    verseBg: 'bg-white/95',
     verseBorder: 'border-[#bae6fd]',
     accentBar: 'bg-[#0284c7]',
     answerBg: 'bg-[#e0f2fe]',
     answerBorder: 'border-[#7dd3fc]',
     answerText: 'text-[#0c4a6e]',
   },
-  // 3. Soft Lavender / Purple (Planning, God's Will & Decisions)
   lavender: {
     cardBg: 'bg-[#faf5ff]',
     borderColor: 'border-[#e9d5ff]',
@@ -70,14 +67,13 @@ const SLIDE_THEMES: Record<string, SlideColorTheme> = {
     badgeText: 'text-[#6b21a8]',
     titleColor: 'text-[#581c87]',
     subtitleColor: 'text-[#9333ea]',
-    verseBg: 'bg-white/90',
+    verseBg: 'bg-white/95',
     verseBorder: 'border-[#e9d5ff]',
     accentBar: 'bg-[#9333ea]',
     answerBg: 'bg-[#f3e8ff]',
     answerBorder: 'border-[#d8b4fe]',
     answerText: 'text-[#581c87]',
   },
-  // 4. Soft Warm Amber / Peach (David's Life, Morning Prayer Psalm 5:3)
   amber: {
     cardBg: 'bg-[#fffbeb]',
     borderColor: 'border-[#fed7aa]',
@@ -85,14 +81,13 @@ const SLIDE_THEMES: Record<string, SlideColorTheme> = {
     badgeText: 'text-[#92400e]',
     titleColor: 'text-[#78350f]',
     subtitleColor: 'text-[#b45309]',
-    verseBg: 'bg-white/90',
+    verseBg: 'bg-white/95',
     verseBorder: 'border-[#fed7aa]',
     accentBar: 'bg-[#d97706]',
     answerBg: 'bg-[#fef3c7]',
     answerBorder: 'border-[#fcd34d]',
     answerText: 'text-[#78350f]',
   },
-  // 5. Soft Indigo (Night Meditation Psalm 63, Leisure Moments)
   indigo: {
     cardBg: 'bg-[#f5f7ff]',
     borderColor: 'border-[#c7d2fe]',
@@ -100,14 +95,13 @@ const SLIDE_THEMES: Record<string, SlideColorTheme> = {
     badgeText: 'text-[#3730a3]',
     titleColor: 'text-[#312e81]',
     subtitleColor: 'text-[#4338ca]',
-    verseBg: 'bg-white/90',
+    verseBg: 'bg-white/95',
     verseBorder: 'border-[#c7d2fe]',
     accentBar: 'bg-[#4f46e5]',
     answerBg: 'bg-[#e0e7ff]',
     answerBorder: 'border-[#a5b4fc]',
     answerText: 'text-[#312e81]',
   },
-  // 6. Soft Rose / Coral (Crisis, Keilah 1 Sam 23, Battle, Timeline)
   rose: {
     cardBg: 'bg-[#fff1f2]',
     borderColor: 'border-[#fecdd3]',
@@ -115,14 +109,13 @@ const SLIDE_THEMES: Record<string, SlideColorTheme> = {
     badgeText: 'text-[#9f1239]',
     titleColor: 'text-[#881337]',
     subtitleColor: 'text-[#be123c]',
-    verseBg: 'bg-white/90',
+    verseBg: 'bg-white/95',
     verseBorder: 'border-[#fecdd3]',
     accentBar: 'bg-[#e11d48]',
     answerBg: 'bg-[#ffe4e6]',
     answerBorder: 'border-[#fda4af]',
     answerText: 'text-[#881337]',
   },
-  // 7. Soft Teal / Turquoise (One Thing I Desire, God Answered, Conclusion)
   teal: {
     cardBg: 'bg-[#f0fdfa]',
     borderColor: 'border-[#99f6e4]',
@@ -130,7 +123,7 @@ const SLIDE_THEMES: Record<string, SlideColorTheme> = {
     badgeText: 'text-[#115e59]',
     titleColor: 'text-[#134e4a]',
     subtitleColor: 'text-[#0f766e]',
-    verseBg: 'bg-white/90',
+    verseBg: 'bg-white/95',
     verseBorder: 'border-[#99f6e4]',
     accentBar: 'bg-[#0d9488]',
     answerBg: 'bg-[#ccfbf1]',
@@ -167,39 +160,21 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
   if (isBlank) {
     return (
-      <div className={`w-full h-full min-h-[560px] bg-slate-900 text-slate-200 flex flex-col items-center justify-center p-8 rounded-3xl border border-slate-800 transition-all duration-300 font-sans ${className}`}>
-        <div className="w-14 h-14 rounded-2xl border border-slate-700 bg-slate-800 flex items-center justify-center mb-4 text-slate-400">
-          <BookOpen className="w-7 h-7" />
-        </div>
-        <span className="text-sm font-bold tracking-widest uppercase text-slate-300">Screen Blanked by Host</span>
-        <p className="text-xs text-slate-400 mt-2 font-medium">Presentation will resume shortly</p>
-      </div>
+      <div className={`w-full h-full min-h-[560px] bg-black rounded-3xl transition-all duration-300 ${className}`} />
     );
   }
 
   return (
     <div className={`w-full h-full min-h-[560px] ${theme.cardBg} ${theme.borderColor} border rounded-3xl p-5 sm:p-7 flex flex-col justify-between relative overflow-hidden transition-all duration-300 font-sans select-none ${className}`}>
       
-      {/* Top iOS Header Bar */}
-      <div className="flex items-center justify-between gap-3 pb-3 border-b border-black/5 z-10 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-            LC
-          </div>
-          <span className="text-xs sm:text-sm font-bold tracking-wide text-slate-800 uppercase truncate max-w-[200px] sm:max-w-xs">
-            {presentationTitle || 'Priority Bible Study'}
-          </span>
-        </div>
-
-        {slide.badge && (
-          <span className={`px-3 py-1 rounded-full text-xs font-bold ${theme.badgeBg} ${theme.badgeText} border ${theme.borderColor} shrink-0`}>
-            {slide.badge}
-          </span>
-        )}
-      </div>
+      {/* 
+        Zero Header: 
+        No top banner bar or header container. 
+        Slide content starts immediately at the top for maximum immersion.
+      */}
 
       {/* Main Slide Content Area (Hidden Scrollbars, Smooth iOS Scrolling) */}
-      <div className="my-auto py-3.5 z-10 flex flex-col justify-start overflow-y-auto max-h-full space-y-4 pr-0.5">
+      <div className="my-auto py-2 z-10 flex flex-col justify-start overflow-y-auto max-h-full space-y-4 pr-0.5">
         
         {/* Constant Slide 1 (James 4:13-15) Reference Pinned at Top for Slides 2 through 15 */}
         {slide.pinnedScripture && (
@@ -238,8 +213,13 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           </div>
         )}
 
-        {/* Slide Title & Subtitle with Extra Size */}
+        {/* Slide Title & Subtitle with Extra Size and Inline Badge */}
         <div className="space-y-1.5">
+          {slide.badge && (
+            <span className={`inline-block px-3 py-0.5 rounded-full text-xs font-bold ${theme.badgeBg} ${theme.badgeText} border ${theme.borderColor} mb-1`}>
+              {slide.badge}
+            </span>
+          )}
           <h2 className={`text-xl sm:text-2xl md:text-3xl font-extrabold ${theme.titleColor} leading-tight`}>
             {slide.title}
           </h2>
