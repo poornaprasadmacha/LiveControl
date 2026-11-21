@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { socket } from '@/lib/socket';
 import { PublicRoomState, PublicPresentationState, PublicQuizState } from '@/types';
@@ -51,7 +51,16 @@ export default function RoomPage() {
       setRoomState(state);
     };
 
-    const handleSlideChanged = (data: { currentSlide: number; isBlank: boolean }) => {
+    const lastSlideSeqRef = useRef<number>(0);
+
+    const handleSlideChanged = (data: { currentSlide: number; isBlank: boolean; seq?: number }) => {
+      // Discard any out-of-order stale packet to guarantee monotonic sequence
+      if (data.seq && data.seq < lastSlideSeqRef.current) {
+        return;
+      }
+      if (data.seq) {
+        lastSlideSeqRef.current = data.seq;
+      }
       setRoomState((prev) => {
         if (!prev || prev.type !== 'presentation') return prev;
         return {

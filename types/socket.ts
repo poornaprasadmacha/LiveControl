@@ -16,7 +16,7 @@ export interface VoiceParticipantInfo {
 
 export interface ServerToClientEvents {
   roomState: (state: PublicRoomState) => void;
-  slideChanged: (data: { currentSlide: number; isBlank: boolean }) => void;
+  slideChanged: (data: { currentSlide: number; isBlank: boolean; seq?: number }) => void;
   adminStatusChanged: (data: { connected: boolean }) => void;
   viewerCountUpdated: (data: { count: number }) => void;
   participantCountUpdated: (data: { count: number }) => void;

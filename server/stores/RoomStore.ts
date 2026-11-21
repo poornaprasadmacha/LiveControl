@@ -34,16 +34,13 @@ export class MemoryRoomStore implements IRoomStore {
   private rooms: Map<string, Room> = new Map();
 
   private generateRoomId(): string {
-    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    let code = '';
-    for (let i = 0; i < 5; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    const fullId = `LC-${code}`;
-    if (this.rooms.has(fullId)) {
+    // Generate a 4-digit numeric code between 0001 and 9999
+    const num = Math.floor(Math.random() * 9999) + 1;
+    const code = String(num).padStart(4, '0');
+    if (this.rooms.has(code)) {
       return this.generateRoomId();
     }
-    return fullId;
+    return code;
   }
 
   createRoom(type: 'presentation' | 'quiz', title: string, adminPin: string): Room {
@@ -97,11 +94,19 @@ export class MemoryRoomStore implements IRoomStore {
   }
 
   getRoom(id: string): Room | undefined {
-    return this.rooms.get(id.toUpperCase());
+    if (!id) return undefined;
+    const clean = id.trim().toUpperCase();
+    return this.rooms.get(clean) || 
+           this.rooms.get(clean.replace(/^LC-/, '')) || 
+           this.rooms.get(clean.padStart(4, '0'));
   }
 
   deleteRoom(id: string): boolean {
-    return this.rooms.delete(id.toUpperCase());
+    if (!id) return false;
+    const clean = id.trim().toUpperCase();
+    return this.rooms.delete(clean) || 
+           this.rooms.delete(clean.replace(/^LC-/, '')) || 
+           this.rooms.delete(clean.padStart(4, '0'));
   }
 
   updateAdminStatus(id: string, connected: boolean): void {

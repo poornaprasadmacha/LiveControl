@@ -13,8 +13,9 @@ export default function JoinSessionPage() {
     e.preventDefault();
     let cleaned = roomIdInput.trim().toUpperCase();
     if (!cleaned) return;
-    if (!cleaned.startsWith('LC-') && cleaned.length === 5) {
-      cleaned = `LC-${cleaned}`;
+    // Format 4-digit code if pure numeric and < 4 digits
+    if (/^\d{1,4}$/.test(cleaned)) {
+      cleaned = cleaned.padStart(4, '0');
     }
     router.push(`/room/${cleaned}`);
   };
@@ -34,22 +35,24 @@ export default function JoinSessionPage() {
               Join Live Session
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Enter the unique Room ID provided by the host.
+              Enter the 4-digit Room Code (0001 – 9999) provided by the host.
             </p>
           </div>
 
           <form onSubmit={handleJoin} className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Room Join Code
+                4-Digit Room Code
               </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. LC-8F3K2"
+                maxLength={6}
+                inputMode="numeric"
+                placeholder="e.g. 1234"
                 value={roomIdInput}
                 onChange={(e) => setRoomIdInput(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono font-bold text-center text-lg tracking-wider focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all uppercase"
+                className="w-full px-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono font-bold text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all uppercase"
               />
             </div>
 

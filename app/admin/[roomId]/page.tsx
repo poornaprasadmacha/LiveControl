@@ -43,12 +43,24 @@ export default function AdminDashboardPage() {
       setRoomState(state);
     };
 
+    const handleSlideChanged = (data: { currentSlide: number; isBlank: boolean }) => {
+      setRoomState((prev) => {
+        if (!prev || prev.type !== 'presentation') return prev;
+        return {
+          ...prev,
+          currentSlide: data.currentSlide,
+          isBlank: data.isBlank,
+        };
+      });
+    };
+
     const handleLiveAnswerUpdate = (data: { answeredCount: number; totalCount: number; distribution: Record<number, number> }) => {
       setLiveAnswerData(data);
     };
 
     socket.on('connect', handleConnect);
     socket.on('roomState', handleRoomState);
+    socket.on('slideChanged', handleSlideChanged);
     socket.on('liveAnswerUpdate', handleLiveAnswerUpdate);
 
     if (socket.connected && savedToken) {
@@ -58,6 +70,7 @@ export default function AdminDashboardPage() {
     return () => {
       socket.off('connect', handleConnect);
       socket.off('roomState', handleRoomState);
+      socket.off('slideChanged', handleSlideChanged);
       socket.off('liveAnswerUpdate', handleLiveAnswerUpdate);
     };
   }, [roomId]);

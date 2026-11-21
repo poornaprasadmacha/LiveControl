@@ -91,13 +91,17 @@ app.get('/api/download-results/:roomId', (req, res) => {
   return res.status(200).send(csv);
 });
 
-// Socket.IO Setup with Permissive CORS
+// Socket.IO Setup with Permissive CORS and Real-Time WebSocket Prioritization
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: {
     origin: (origin, callback) => callback(null, true),
     methods: ['GET', 'POST'],
     credentials: true,
   },
+  transports: ['websocket', 'polling'], // WebSocket first for instant slide changes
+  allowUpgrades: true,
+  pingTimeout: 10000,
+  pingInterval: 5000,
 });
 
 // Timers map for quiz auto-closing
@@ -262,7 +266,7 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     return callback({ success: false, error: 'Invalid role specified.' });
   });
 
-  // 4. Presentation Controls: Change Slide
+  // 4. Presentation Controls: Change Slide (Ultra-fast real-time delivery with monotonic seq)
   socket.on('changeSlide', ({ roomId, slideIndex, isBlank, token }) => {
     const adminToken = token || socket.data.adminToken;
     if (!verifyAdmin(roomId, adminToken)) {
@@ -271,8 +275,12 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
     const room = roomStore.setSlide(roomId, slideIndex, isBlank);
     if (room) {
-      io.to(roomId).emit('slideChanged', { currentSlide: room.currentSlide, isBlank: room.isBlank });
-      broadcastRoomState(roomId);
+      const seq = Date.now();
+      io.to(roomId).emit('slideChanged', { 
+        currentSlide: room.currentSlide, 
+        isBlank: room.isBlank,
+        seq 
+      });
     }
   });
 
@@ -282,8 +290,12 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
 
     const room = roomStore.toggleBlank(roomId);
     if (room) {
-      io.to(roomId).emit('slideChanged', { currentSlide: room.currentSlide, isBlank: room.isBlank });
-      broadcastRoomState(roomId);
+      const seq = Date.now();
+      io.to(roomId).emit('slideChanged', { 
+        currentSlide: room.currentSlide, 
+        isBlank: room.isBlank,
+        seq 
+      });
     }
   });
 

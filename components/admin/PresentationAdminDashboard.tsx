@@ -29,18 +29,27 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
   const [isDesktopDeckOpen, setIsDesktopDeckOpen] = useState(false);
 
   const slides = getSlidesByTitle(state.title);
-  const currentSlide = state.currentSlide;
+  const [localSlide, setLocalSlide] = useState(state.currentSlide);
   const totalSlides = slides.length;
 
+  // Sync when server state updates
+  useEffect(() => {
+    setLocalSlide(state.currentSlide);
+  }, [state.currentSlide]);
+
   const handlePrev = () => {
-    if (currentSlide > 1) {
-      onSlideChange(currentSlide - 1);
+    if (localSlide > 1) {
+      const target = localSlide - 1;
+      setLocalSlide(target);
+      onSlideChange(target);
     }
   };
 
   const handleNext = () => {
-    if (currentSlide < totalSlides) {
-      onSlideChange(currentSlide + 1);
+    if (localSlide < totalSlides) {
+      const target = localSlide + 1;
+      setLocalSlide(target);
+      onSlideChange(target);
     }
   };
 
@@ -82,7 +91,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide, totalSlides]);
+  }, [localSlide, totalSlides]);
 
   return (
     <div className="min-h-[100dvh] h-[100dvh] w-full bg-slate-100 flex flex-col justify-between overflow-hidden select-none font-sans relative">
@@ -174,7 +183,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         {/* The Exact User Vertical Slide View */}
         <div className="w-full h-full sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16] flex flex-col justify-center relative">
           <SlideViewer 
-            currentSlide={currentSlide} 
+            currentSlide={localSlide} 
             isBlank={state.isBlank}
             presentationTitle={state.title}
             slides={slides}
@@ -188,10 +197,10 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         */}
         <button
           onClick={handlePrev}
-          disabled={currentSlide <= 1}
+          disabled={localSlide <= 1}
           aria-label="Previous Slide"
           className={`fixed left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 border border-slate-200/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition-all ${
-            currentSlide <= 1 ? 'opacity-30 pointer-events-none' : 'hover:border-slate-400'
+            localSlide <= 1 ? 'opacity-30 pointer-events-none' : 'hover:border-slate-400'
           }`}
           title="Previous Slide"
         >
@@ -204,10 +213,10 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         */}
         <button
           onClick={handleNext}
-          disabled={currentSlide >= totalSlides}
+          disabled={localSlide >= totalSlides}
           aria-label="Next Slide"
           className={`fixed right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white border border-slate-800 backdrop-blur-md flex items-center justify-center active:scale-90 transition-all ${
-            currentSlide >= totalSlides ? 'opacity-30 pointer-events-none' : 'hover:bg-black'
+            localSlide >= totalSlides ? 'opacity-30 pointer-events-none' : 'hover:bg-black'
           }`}
           title="Next Slide"
         >
@@ -226,7 +235,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
           
           {/* Slide Indicator Badge */}
           <div className="flex items-center gap-1 font-mono text-xs font-extrabold text-slate-800 px-2 py-0.5 rounded-full bg-slate-100">
-            <span>{currentSlide}</span>
+            <span>{localSlide}</span>
             <span className="text-slate-400">/</span>
             <span>{totalSlides}</span>
           </div>
@@ -299,7 +308,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
           <div className="space-y-2 overflow-y-auto flex-1 pr-1">
             {slides.map((slide, idx) => {
               const slideNum = idx + 1;
-              const isActive = slideNum === currentSlide;
+              const isActive = slideNum === localSlide;
 
               return (
                 <button
