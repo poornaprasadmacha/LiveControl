@@ -299,6 +299,55 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     }
   });
 
+  // 5.1 Presentation Controls: Start Ultra-Low Latency Screen Share
+  socket.on('startScreenShare', ({ roomId, token }) => {
+    const adminToken = token || socket.data.adminToken;
+    if (!verifyAdmin(roomId, adminToken)) return;
+
+    const room = roomStore.setScreenShare(roomId, true, socket.id);
+    if (room) {
+      console.log(`📺 Admin started Screen Share in room ${roomId} (admin socket: ${socket.id})`);
+      io.to(roomId).emit('screenShareStarted', { adminSocketId: socket.id });
+      broadcastRoomState(roomId);
+    }
+  });
+
+  // 5.2 Presentation Controls: Stop Screen Share
+  socket.on('stopScreenShare', ({ roomId, token }) => {
+    const adminToken = token || socket.data.adminToken;
+    if (!verifyAdmin(roomId, adminToken)) return;
+
+    const room = roomStore.setScreenShare(roomId, false, null);
+    if (room) {
+      console.log(`⏹️ Admin stopped Screen Share in room ${roomId}`);
+      io.to(roomId).emit('screenShareStopped');
+      broadcastRoomState(roomId);
+    }
+  });
+
+  // 5.3 WebRTC Screen Share: Viewer requests live stream from Admin
+  socket.on('requestScreenStream', ({ roomId }) => {
+    const room = roomStore.getRoom(roomId);
+    if (room && room.type === 'presentation' && room.isScreenSharing && room.screenShareSocketId) {
+      io.to(room.screenShareSocketId).emit('viewerRequestStream', { viewerSocketId: socket.id });
+    }
+  });
+
+  // 5.4 WebRTC Screen Share: Admin sends SDP Offer to a specific viewer
+  socket.on('sendScreenOffer', ({ targetSocketId, offer }) => {
+    io.to(targetSocketId).emit('screenOffer', { fromSocketId: socket.id, offer });
+  });
+
+  // 5.5 WebRTC Screen Share: Viewer sends SDP Answer back to Admin
+  socket.on('sendScreenAnswer', ({ targetSocketId, answer }) => {
+    io.to(targetSocketId).emit('screenAnswer', { fromSocketId: socket.id, answer });
+  });
+
+  // 5.6 WebRTC Screen Share: ICE Candidate exchange between Admin and Viewer
+  socket.on('sendScreenIceCandidate', ({ targetSocketId, candidate }) => {
+    io.to(targetSocketId).emit('screenIceCandidate', { fromSocketId: socket.id, candidate });
+  });
+
   // 6. Quiz Controls: Start Quiz
   socket.on('startQuiz', ({ roomId }) => {
     if (!verifyAdmin(roomId, socket.data.adminToken)) return;
@@ -651,11 +700,18 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
         if (role === 'ADMIN') {
           console.log(`⚠️ Admin disconnected from room: ${roomId}`);
           roomStore.updateAdminStatus(roomId, false);
+          if (room.type === 'presentation' && room.isScreenSharing) {
+            roomStore.setScreenShare(roomId, false, null);
+            io.to(roomId).emit('screenShareStopped');
+          }
           io.to(roomId).emit('adminStatusChanged', { connected: false });
           broadcastRoomState(roomId);
         } else if (role === 'VIEWER') {
           const count = roomStore.removeViewer(roomId, socket.id);
           io.to(roomId).emit('viewerCountUpdated', { count });
+          if (room.type === 'presentation' && room.screenShareSocketId) {
+            io.to(room.screenShareSocketId).emit('viewerLeftStream', { viewerSocketId: socket.id });
+          }
         } else if (role === 'PARTICIPANT') {
           const count = roomStore.removeParticipant(roomId, socket.id);
           io.to(roomId).emit('participantCountUpdated', { count });

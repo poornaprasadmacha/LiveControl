@@ -91,6 +91,28 @@ export default function RoomPage() {
       });
     };
 
+    const handleScreenShareStarted = (data: { adminSocketId: string }) => {
+      setRoomState((prev) => {
+        if (!prev || prev.type !== 'presentation') return prev;
+        return {
+          ...prev,
+          isScreenSharing: true,
+          screenShareSocketId: data.adminSocketId,
+        };
+      });
+    };
+
+    const handleScreenShareStopped = () => {
+      setRoomState((prev) => {
+        if (!prev || prev.type !== 'presentation') return prev;
+        return {
+          ...prev,
+          isScreenSharing: false,
+          screenShareSocketId: null,
+        };
+      });
+    };
+
     const handleSessionEnded = () => {
       setIsSessionEnded(true);
       socket.disconnect();
@@ -103,6 +125,8 @@ export default function RoomPage() {
     socket.on('adminStatusChanged', handleAdminStatusChanged);
     socket.on('viewerCountUpdated', handleViewerCountUpdated);
     socket.on('participantCountUpdated', handleParticipantCountUpdated);
+    socket.on('screenShareStarted', handleScreenShareStarted);
+    socket.on('screenShareStopped', handleScreenShareStopped);
     socket.on('sessionEnded', handleSessionEnded);
 
     if (socket.connected) {
@@ -117,6 +141,8 @@ export default function RoomPage() {
       socket.off('adminStatusChanged', handleAdminStatusChanged);
       socket.off('viewerCountUpdated', handleViewerCountUpdated);
       socket.off('participantCountUpdated', handleParticipantCountUpdated);
+      socket.off('screenShareStarted', handleScreenShareStarted);
+      socket.off('screenShareStopped', handleScreenShareStopped);
       socket.off('sessionEnded', handleSessionEnded);
     };
   }, [roomId]);

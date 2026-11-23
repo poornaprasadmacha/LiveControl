@@ -12,6 +12,8 @@ export function getPublicRoomState(
       currentSlide: room.currentSlide,
       totalSlides: room.totalSlides,
       isBlank: room.isBlank,
+      isScreenSharing: Boolean(room.isScreenSharing),
+      screenShareSocketId: room.screenShareSocketId || null,
       adminConnected: room.adminConnected,
       viewerCount: Object.keys(room.viewers).length,
     };

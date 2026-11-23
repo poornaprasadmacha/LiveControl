@@ -181,6 +181,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         {/* Full PPT Slide Image */}
         <div className="flex-1 w-full h-full flex items-center justify-center my-auto overflow-hidden">
           <img 
+            key={slide.imageUrl || slide.id}
             src={slide.imageUrl} 
             alt={slide.title} 
             loading="eager"

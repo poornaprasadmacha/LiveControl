@@ -21,6 +21,8 @@ export interface PresentationRoom extends BaseRoom {
   currentSlide: number;
   totalSlides: number;
   isBlank: boolean;
+  isScreenSharing?: boolean;
+  screenShareSocketId?: string | null;
   viewers: Record<string, Viewer>;
 }
 
@@ -75,6 +77,8 @@ export interface PublicPresentationState {
   currentSlide: number;
   totalSlides: number;
   isBlank: boolean;
+  isScreenSharing?: boolean;
+  screenShareSocketId?: string | null;
   adminConnected: boolean;
   viewerCount: number;
 }

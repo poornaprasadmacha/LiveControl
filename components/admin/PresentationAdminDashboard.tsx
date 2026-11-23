@@ -1,25 +1,36 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { SlideViewer } from '../presentation/SlideViewer';
 import { getSlidesByTitle, isWidescreenPresentation } from '@/lib/samplePresentation';
 import { EndSessionModal } from './EndSessionModal';
 import { ShareModal } from '../shared/ShareModal';
+import { socket } from '@/lib/socket';
 import { 
   ChevronLeft, ChevronRight, EyeOff, Maximize, Share2, Trash2, Users, 
-  Layers, X, Smartphone
+  Layers, X, Monitor, Square, Tv
 } from 'lucide-react';
 import { PublicPresentationState } from '@/types';
 
 interface PresentationAdminDashboardProps {
   state: PublicPresentationState;
+  token: string;
   onSlideChange: (slideIndex: number, isBlank?: boolean) => void;
   onToggleBlank: () => void;
   onEndSession: () => void;
 }
 
+const ICE_SERVERS: RTCConfiguration = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+  ],
+};
+
 export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProps> = ({
   state,
+  token,
   onSlideChange,
   onToggleBlank,
   onEndSession,
@@ -29,29 +40,47 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
   const [isDesktopDeckOpen, setIsDesktopDeckOpen] = useState(false);
 
   const slides = getSlidesByTitle(state.title);
-  const [localSlide, setLocalSlide] = useState(state.currentSlide);
+  const [localSlide, setLocalSlide] = useState(state.currentSlide || 1);
   const totalSlides = slides.length;
 
-  // Sync when server state updates
+  // Screen Sharing State & WebRTC Refs
+  const [isSharingScreen, setIsSharingScreen] = useState(Boolean(state.isScreenSharing));
+  const streamRef = useRef<MediaStream | null>(null);
+  const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
+  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+
+  // Sync when server slide state updates
   useEffect(() => {
-    setLocalSlide(state.currentSlide);
+    if (state.currentSlide && state.currentSlide !== localSlide) {
+      setLocalSlide(state.currentSlide);
+    }
   }, [state.currentSlide]);
 
-  const handlePrev = () => {
+  // Sync screen sharing state from server
+  useEffect(() => {
+    if (typeof state.isScreenSharing === 'boolean' && state.isScreenSharing !== isSharingScreen) {
+      setIsSharingScreen(state.isScreenSharing);
+      if (!state.isScreenSharing && streamRef.current) {
+        stopScreenShareCleanup();
+      }
+    }
+  }, [state.isScreenSharing]);
+
+  const handlePrev = useCallback(() => {
     if (localSlide > 1) {
       const target = localSlide - 1;
       setLocalSlide(target);
       onSlideChange(target);
     }
-  };
+  }, [localSlide, onSlideChange]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (localSlide < totalSlides) {
       const target = localSlide + 1;
       setLocalSlide(target);
       onSlideChange(target);
     }
-  };
+  }, [localSlide, totalSlides, onSlideChange]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -76,9 +105,11 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         handlePrev();
       } else if (e.key === 'Home') {
         e.preventDefault();
+        setLocalSlide(1);
         onSlideChange(1);
       } else if (e.key === 'End') {
         e.preventDefault();
+        setLocalSlide(totalSlides);
         onSlideChange(totalSlides);
       } else if (e.key === 'b' || e.key === 'B') {
         e.preventDefault();
@@ -91,7 +122,189 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [localSlide, totalSlides]);
+  }, [localSlide, totalSlides, handleNext, handlePrev, onSlideChange, onToggleBlank]);
+
+  // Screen Share Cleanup
+  const stopScreenShareCleanup = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoPreviewRef.current) {
+      videoPreviewRef.current.srcObject = null;
+    }
+    peerConnectionsRef.current.forEach((pc) => {
+      try {
+        pc.close();
+      } catch {}
+    });
+    peerConnectionsRef.current.clear();
+    setIsSharingScreen(false);
+  }, []);
+
+  // Stop Screen Share (Emits to Server)
+  const handleStopScreenShare = useCallback(() => {
+    stopScreenShareCleanup();
+    socket.emit('stopScreenShare', { roomId: state.id, token });
+  }, [state.id, token, stopScreenShareCleanup]);
+
+  // Start Screen Share (High-performance 60 FPS, Low Latency)
+  const handleStartScreenShare = async () => {
+    try {
+      if (!navigator.mediaDevices?.getDisplayMedia) {
+        alert('Screen sharing is not supported on this browser or platform.');
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          cursor: 'always',
+          frameRate: { ideal: 30, max: 60 },
+          width: { ideal: 1920, max: 2560 },
+          height: { ideal: 1080, max: 1440 },
+        } as any,
+        audio: false,
+      });
+
+      // Video track optimization for text sharpness and silky smooth motion
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        if ('contentHint' in videoTrack) {
+          (videoTrack as any).contentHint = 'motion';
+        }
+        videoTrack.onended = () => {
+          handleStopScreenShare();
+        };
+      }
+
+      streamRef.current = stream;
+      setIsSharingScreen(true);
+
+      if (videoPreviewRef.current) {
+        videoPreviewRef.current.srcObject = stream;
+        videoPreviewRef.current.play().catch(() => {});
+      }
+
+      socket.emit('startScreenShare', { roomId: state.id, token });
+    } catch (err: any) {
+      console.log('Screen sharing cancelled or permission denied:', err);
+    }
+  };
+
+  // WebRTC Signaling Handlers (Relaying Screen Stream to Viewers)
+  useEffect(() => {
+    const handleViewerRequestStream = async ({ viewerSocketId }: { viewerSocketId: string }) => {
+      if (!streamRef.current) return;
+
+      try {
+        const existingPc = peerConnectionsRef.current.get(viewerSocketId);
+        if (existingPc) {
+          existingPc.close();
+        }
+
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        peerConnectionsRef.current.set(viewerSocketId, pc);
+
+        // Add all video tracks to peer connection
+        streamRef.current.getTracks().forEach((track) => {
+          pc.addTrack(track, streamRef.current!);
+        });
+
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            socket.emit('sendScreenIceCandidate', {
+              targetSocketId: viewerSocketId,
+              candidate: event.candidate,
+            });
+          }
+        };
+
+        pc.onconnectionstatechange = () => {
+          if (
+            pc.connectionState === 'disconnected' ||
+            pc.connectionState === 'failed' ||
+            pc.connectionState === 'closed'
+          ) {
+            peerConnectionsRef.current.delete(viewerSocketId);
+          }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        socket.emit('sendScreenOffer', {
+          targetSocketId: viewerSocketId,
+          offer,
+        });
+      } catch (err) {
+        console.error('Failed to create screen offer for viewer:', viewerSocketId, err);
+      }
+    };
+
+    const handleScreenAnswer = async ({
+      fromSocketId,
+      answer,
+    }: {
+      fromSocketId: string;
+      answer: any;
+    }) => {
+      const pc = peerConnectionsRef.current.get(fromSocketId);
+      if (pc) {
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        } catch (err) {
+          console.error('Failed to set remote description from answer:', err);
+        }
+      }
+    };
+
+    const handleScreenIceCandidate = async ({
+      fromSocketId,
+      candidate,
+    }: {
+      fromSocketId: string;
+      candidate: any;
+    }) => {
+      const pc = peerConnectionsRef.current.get(fromSocketId);
+      if (pc && pc.remoteDescription) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (err) {
+          console.error('Failed to add ICE candidate from viewer:', err);
+        }
+      }
+    };
+
+    const handleViewerLeftStream = ({ viewerSocketId }: { viewerSocketId: string }) => {
+      const pc = peerConnectionsRef.current.get(viewerSocketId);
+      if (pc) {
+        pc.close();
+        peerConnectionsRef.current.delete(viewerSocketId);
+      }
+    };
+
+    socket.on('viewerRequestStream', handleViewerRequestStream);
+    socket.on('screenAnswer', handleScreenAnswer);
+    socket.on('screenIceCandidate', handleScreenIceCandidate);
+    socket.on('viewerLeftStream', handleViewerLeftStream);
+
+    return () => {
+      socket.off('viewerRequestStream', handleViewerRequestStream);
+      socket.off('screenAnswer', handleScreenAnswer);
+      socket.off('screenIceCandidate', handleScreenIceCandidate);
+      socket.off('viewerLeftStream', handleViewerLeftStream);
+    };
+  }, []);
+
+  // Make sure videoPreviewRef stays synced when stream is active
+  useEffect(() => {
+    if (isSharingScreen && streamRef.current && videoPreviewRef.current) {
+      if (videoPreviewRef.current.srcObject !== streamRef.current) {
+        videoPreviewRef.current.srcObject = streamRef.current;
+        videoPreviewRef.current.play().catch(() => {});
+      }
+    }
+  }, [isSharingScreen]);
 
   return (
     <div className="min-h-[100dvh] h-[100dvh] w-full bg-slate-100 flex flex-col justify-between overflow-hidden select-none font-sans relative">
@@ -134,6 +347,25 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
             <span>{state.viewerCount} Viewers</span>
           </div>
 
+          {/* Screen Share Button */}
+          {isSharingScreen ? (
+            <button
+              onClick={handleStopScreenShare}
+              className="px-3.5 py-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-red-200 transition-all animate-pulse"
+            >
+              <Square className="w-3.5 h-3.5 fill-white" />
+              <span>Stop Screen Share</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleStartScreenShare}
+              className="px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-100 transition-all"
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span>Share Screen</span>
+            </button>
+          )}
+
           {/* Toggle Deck Drawer on Desktop */}
           <button
             onClick={() => setIsDesktopDeckOpen(!isDesktopDeckOpen)}
@@ -174,75 +406,144 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
 
       {/* 
         Main Admin Viewing Area:
-        - Admin sees the slide JUST AS USER
+        - Admin sees either the Live Screen Share Monitor or the active Slide
         - On Mobile: Edge-to-edge full height (100dvh), zero header/deck clutter
-        - On Desktop: Centered vertical phone card frame
+        - On Desktop: Centered widescreen 16:9 frame
       */}
       <main className="flex-1 w-full flex items-center justify-center relative p-0 sm:p-4 overflow-hidden">
         
-        {/* The Exact Slide View: Responsive 16:9 on Desktop for Horizontal PPT, Vertical 9:16 for Mobile/Vertical Decks */}
+        {/* The Exact Slide or Live Screen View */}
         <div className={`w-full h-full ${
-          isWidescreenPresentation(state?.title, slides)
+          isSharingScreen || isWidescreenPresentation(state?.title, slides)
             ? 'sm:h-auto sm:max-w-5xl md:max-w-6xl lg:max-w-7xl sm:aspect-[16/9] px-0 sm:px-4' 
             : 'sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16]'
         } flex flex-col justify-center relative`}>
-          <SlideViewer 
-            currentSlide={localSlide} 
-            isBlank={Boolean(state?.isBlank)}
-            presentationTitle={state?.title || 'SQL Workshop'}
-            slides={slides}
-            className="h-full rounded-none sm:rounded-3xl border-0 sm:border border-slate-200"
-          />
+          
+          {isSharingScreen ? (
+            /* Live Screen Share Host Monitor */
+            <div className="w-full h-full bg-slate-950 border border-slate-800 rounded-none sm:rounded-3xl p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden shadow-2xl">
+              <div className="flex-1 w-full h-full flex items-center justify-center relative overflow-hidden">
+                <video
+                  ref={videoPreviewRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full max-h-[82dvh] object-contain rounded-xl select-none"
+                />
+              </div>
+
+              {/* Status Bar */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-white z-10 shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                  <span className="tracking-wide">BROADCASTING YOUR SCREEN LIVE</span>
+                  <span className="text-slate-400 font-mono hidden sm:inline">(60 FPS Ultra-Low Latency)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleStopScreenShare}
+                  className="px-3 py-1 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold flex items-center gap-1 transition-all"
+                >
+                  <Square className="w-3 h-3 fill-white" />
+                  <span>Stop Sharing</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <SlideViewer 
+              key={localSlide}
+              currentSlide={localSlide} 
+              isBlank={Boolean(state?.isBlank)}
+              presentationTitle={state?.title || 'SQL Workshop'}
+              slides={slides}
+              className="h-full rounded-none sm:rounded-3xl border-0 sm:border border-slate-200"
+            />
+          )}
         </div>
 
         {/* 
           iOS Left Floating Navigation Chevron:
           - High touch area on the left edge for single-thumb backward navigation
+          - Hidden when screen sharing is active
         */}
-        <button
-          onClick={handlePrev}
-          disabled={localSlide <= 1}
-          aria-label="Previous Slide"
-          className={`fixed left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 border border-slate-200/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition-all ${
-            localSlide <= 1 ? 'opacity-30 pointer-events-none' : 'hover:border-slate-400'
-          }`}
-          title="Previous Slide"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
+        {!isSharingScreen && (
+          <button
+            onClick={handlePrev}
+            disabled={localSlide <= 1}
+            aria-label="Previous Slide"
+            className={`fixed left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 border border-slate-200/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition-all ${
+              localSlide <= 1 ? 'opacity-30 pointer-events-none' : 'hover:border-slate-400'
+            }`}
+            title="Previous Slide"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
 
         {/* 
           iOS Right Floating Navigation Chevron:
           - High touch area on the right edge for single-thumb forward navigation
+          - Hidden when screen sharing is active
         */}
-        <button
-          onClick={handleNext}
-          disabled={localSlide >= totalSlides}
-          aria-label="Next Slide"
-          className={`fixed right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white border border-slate-800 backdrop-blur-md flex items-center justify-center active:scale-90 transition-all ${
-            localSlide >= totalSlides ? 'opacity-30 pointer-events-none' : 'hover:bg-black'
-          }`}
-          title="Next Slide"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
+        {!isSharingScreen && (
+          <button
+            onClick={handleNext}
+            disabled={localSlide >= totalSlides}
+            aria-label="Next Slide"
+            className={`fixed right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-slate-900/90 hover:bg-slate-950 text-white border border-slate-800 backdrop-blur-md flex items-center justify-center active:scale-90 transition-all ${
+              localSlide >= totalSlides ? 'opacity-30 pointer-events-none' : 'hover:bg-black'
+            }`}
+            title="Next Slide"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        )}
 
         {/* 
           iOS Bottom Dynamic Island Pill (Admin Control Bar):
           - Minimal, floating at bottom center of the screen
-          - Displays current slide index (e.g. 12 / 32)
+          - Displays current slide index (e.g. 12 / 28) or Live Screen indicator
+          - Quick Screen Share toggle
           - Quick Blank toggle
           - Quick Share & Exit buttons
-          - Completely non-intrusive and leaves slides unobstructed
         */}
-        <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-lg border border-slate-200/90 rounded-full px-4 py-2 flex items-center gap-3">
+        <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-lg border border-slate-200/90 rounded-full px-4 py-2 flex items-center gap-3 shadow-lg">
           
-          {/* Slide Indicator Badge */}
-          <div className="flex items-center gap-1 font-mono text-xs font-extrabold text-slate-800 px-2 py-0.5 rounded-full bg-slate-100">
-            <span>{localSlide}</span>
-            <span className="text-slate-400">/</span>
-            <span>{totalSlides}</span>
-          </div>
+          {/* Slide Indicator Badge or Screen Share Status */}
+          {isSharingScreen ? (
+            <div className="flex items-center gap-1.5 font-sans text-xs font-extrabold text-red-600 px-2 py-0.5 rounded-full bg-red-50 border border-red-200">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+              <span>SCREEN LIVE</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 font-mono text-xs font-extrabold text-slate-800 px-2 py-0.5 rounded-full bg-slate-100">
+              <span>{localSlide}</span>
+              <span className="text-slate-400">/</span>
+              <span>{totalSlides}</span>
+            </div>
+          )}
+
+          <div className="h-4 w-px bg-slate-200" />
+
+          {/* Screen Share Button in Bottom Pill */}
+          {isSharingScreen ? (
+            <button
+              onClick={handleStopScreenShare}
+              className="p-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1 transition-all"
+              title="Stop Sharing Screen"
+            >
+              <Square className="w-3.5 h-3.5 fill-white" />
+              <span className="text-[11px] font-bold pr-1">Stop</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleStartScreenShare}
+              className="p-1.5 rounded-full text-blue-700 hover:text-blue-900 hover:bg-blue-50 transition-colors"
+              title="Share Your Screen"
+            >
+              <Monitor className="w-4 h-4" />
+            </button>
+          )}
 
           <div className="h-4 w-px bg-slate-200" />
 
@@ -318,6 +619,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
                 <button
                   key={slide.id}
                   onClick={() => {
+                    setLocalSlide(slideNum);
                     onSlideChange(slideNum);
                     setIsDesktopDeckOpen(false);
                   }}

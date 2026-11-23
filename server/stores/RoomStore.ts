@@ -13,6 +13,7 @@ export interface IRoomStore {
   removeViewer(id: string, socketId: string): number;
   setSlide(id: string, slideIndex: number, isBlank?: boolean): PresentationRoom | null;
   toggleBlank(id: string): PresentationRoom | null;
+  setScreenShare(id: string, isSharing: boolean, socketId?: string | null): PresentationRoom | null;
 
   // Quiz methods
   addParticipant(id: string, socketId: string, nickname: string, participantId: string): { participant: Participant; count: number } | null;
@@ -61,6 +62,8 @@ export class MemoryRoomStore implements IRoomStore {
         currentSlide: 1,
         totalSlides: slides.length,
         isBlank: false,
+        isScreenSharing: false,
+        screenShareSocketId: null,
         viewers: {},
         createdAt: now,
         lastAdminSeenAt: now,
@@ -144,12 +147,24 @@ export class MemoryRoomStore implements IRoomStore {
   setSlide(id: string, slideIndex: number, isBlank?: boolean): PresentationRoom | null {
     const room = this.getRoom(id);
     if (room && room.type === 'presentation') {
+      const maxSlides = Math.max(room.totalSlides, getSlidesByTitle(room.title).length, slideIndex);
+      room.totalSlides = maxSlides;
       if (slideIndex >= 1 && slideIndex <= room.totalSlides) {
         room.currentSlide = slideIndex;
       }
       if (typeof isBlank === 'boolean') {
         room.isBlank = isBlank;
       }
+      return room;
+    }
+    return null;
+  }
+
+  setScreenShare(id: string, isSharing: boolean, socketId?: string | null): PresentationRoom | null {
+    const room = this.getRoom(id);
+    if (room && room.type === 'presentation') {
+      room.isScreenSharing = isSharing;
+      room.screenShareSocketId = isSharing ? (socketId || null) : null;
       return room;
     }
     return null;

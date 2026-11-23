@@ -38,6 +38,15 @@ export interface ServerToClientEvents {
   'voice-room-users': (data: { users: VoiceParticipantInfo[]; turnServers: IceServerConfig[] }) => void;
   'voice-admin-control': (data: { action: 'ENABLE_VOICE' | 'DISABLE_VOICE' | 'MUTE_ALL' | 'ALLOW_AUDIENCE_MICS'; allowed?: boolean }) => void;
   
+  // Real-Time WebRTC Ultra-Low Latency Screen Share Signaling Events
+  screenShareStarted: (data: { adminSocketId: string }) => void;
+  screenShareStopped: () => void;
+  viewerRequestStream: (data: { viewerSocketId: string }) => void;
+  viewerLeftStream: (data: { viewerSocketId: string }) => void;
+  screenOffer: (data: { fromSocketId: string; offer: any }) => void;
+  screenAnswer: (data: { fromSocketId: string; answer: any }) => void;
+  screenIceCandidate: (data: { fromSocketId: string; candidate: any }) => void;
+  
   // Legacy aliases for backwards compatibility
   webrtcOffer: (data: { senderSocketId: string; sdp: any; senderRole: string; nickname?: string }) => void;
   webrtcAnswer: (data: { senderSocketId: string; sdp: any }) => void;
@@ -103,4 +112,12 @@ export interface ClientToServerEvents {
   sendWebrtcIceCandidate: (data: { targetSocketId: string; candidate: any }) => void;
   startVoiceBroadcast: (data: { roomId: string; role: string; nickname?: string }) => void;
   stopVoiceBroadcast: (data: { roomId: string }) => void;
+
+  // Real-Time WebRTC Ultra-Low Latency Screen Share Handlers
+  startScreenShare: (data: { roomId: string; token: string }) => void;
+  stopScreenShare: (data: { roomId: string; token: string }) => void;
+  requestScreenStream: (data: { roomId: string }) => void;
+  sendScreenOffer: (data: { targetSocketId: string; offer: any }) => void;
+  sendScreenAnswer: (data: { targetSocketId: string; answer: any }) => void;
+  sendScreenIceCandidate: (data: { targetSocketId: string; candidate: any }) => void;
 }

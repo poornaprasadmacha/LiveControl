@@ -54,6 +54,28 @@ export default function AdminDashboardPage() {
       });
     };
 
+    const handleScreenShareStarted = (data: { adminSocketId: string }) => {
+      setRoomState((prev) => {
+        if (!prev || prev.type !== 'presentation') return prev;
+        return {
+          ...prev,
+          isScreenSharing: true,
+          screenShareSocketId: data.adminSocketId,
+        };
+      });
+    };
+
+    const handleScreenShareStopped = () => {
+      setRoomState((prev) => {
+        if (!prev || prev.type !== 'presentation') return prev;
+        return {
+          ...prev,
+          isScreenSharing: false,
+          screenShareSocketId: null,
+        };
+      });
+    };
+
     const handleLiveAnswerUpdate = (data: { answeredCount: number; totalCount: number; distribution: Record<number, number> }) => {
       setLiveAnswerData(data);
     };
@@ -61,6 +83,8 @@ export default function AdminDashboardPage() {
     socket.on('connect', handleConnect);
     socket.on('roomState', handleRoomState);
     socket.on('slideChanged', handleSlideChanged);
+    socket.on('screenShareStarted', handleScreenShareStarted);
+    socket.on('screenShareStopped', handleScreenShareStopped);
     socket.on('liveAnswerUpdate', handleLiveAnswerUpdate);
 
     if (socket.connected && savedToken) {
@@ -71,6 +95,8 @@ export default function AdminDashboardPage() {
       socket.off('connect', handleConnect);
       socket.off('roomState', handleRoomState);
       socket.off('slideChanged', handleSlideChanged);
+      socket.off('screenShareStarted', handleScreenShareStarted);
+      socket.off('screenShareStopped', handleScreenShareStopped);
       socket.off('liveAnswerUpdate', handleLiveAnswerUpdate);
     };
   }, [roomId]);
@@ -121,6 +147,14 @@ export default function AdminDashboardPage() {
   // Action Handlers
   const handleSlideChange = (slideIndex: number, isBlank?: boolean) => {
     if (!token) return;
+    setRoomState((prev) => {
+      if (!prev || prev.type !== 'presentation') return prev;
+      return {
+        ...prev,
+        currentSlide: slideIndex,
+        isBlank: typeof isBlank === 'boolean' ? isBlank : prev.isBlank,
+      };
+    });
     socket.emit('changeSlide', { roomId, slideIndex, isBlank, token });
   };
 
@@ -255,6 +289,7 @@ export default function AdminDashboardPage() {
     return (
       <PresentationAdminDashboard
         state={roomState as PublicPresentationState}
+        token={token || ''}
         onSlideChange={handleSlideChange}
         onToggleBlank={handleToggleBlank}
         onEndSession={handleEndSession}
