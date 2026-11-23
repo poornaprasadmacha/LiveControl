@@ -46,6 +46,7 @@ export interface ServerToClientEvents {
   screenOffer: (data: { fromSocketId: string; offer: any }) => void;
   screenAnswer: (data: { fromSocketId: string; answer: any }) => void;
   screenIceCandidate: (data: { fromSocketId: string; candidate: any }) => void;
+  screenFrame: (data: { frame: string }) => void;
   
   // Legacy aliases for backwards compatibility
   webrtcOffer: (data: { senderSocketId: string; sdp: any; senderRole: string; nickname?: string }) => void;
@@ -120,4 +121,5 @@ export interface ClientToServerEvents {
   sendScreenOffer: (data: { targetSocketId: string; offer: any }) => void;
   sendScreenAnswer: (data: { targetSocketId: string; answer: any }) => void;
   sendScreenIceCandidate: (data: { targetSocketId: string; candidate: any }) => void;
+  sendScreenFrame: (data: { roomId: string; frame: string; token: string }) => void;
 }

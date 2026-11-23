@@ -348,6 +348,14 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     io.to(targetSocketId).emit('screenIceCandidate', { fromSocketId: socket.id, candidate });
   });
 
+  // 5.7 Screen Share: Ultra-Fast Real-Time Frame Relay
+  socket.on('sendScreenFrame', ({ roomId, frame, token }) => {
+    const adminToken = token || socket.data.adminToken;
+    if (!verifyAdmin(roomId, adminToken)) return;
+    // Broadcast instantly to all viewers in the room except host
+    socket.to(roomId).emit('screenFrame', { frame });
+  });
+
   // 6. Quiz Controls: Start Quiz
   socket.on('startQuiz', ({ roomId }) => {
     if (!verifyAdmin(roomId, socket.data.adminToken)) return;

@@ -8,7 +8,7 @@ import { ShareModal } from '../shared/ShareModal';
 import { socket } from '@/lib/socket';
 import { 
   ChevronLeft, ChevronRight, EyeOff, Maximize, Share2, Trash2, Users, 
-  Layers, X, Monitor, Square, Tv
+  Layers, X, Monitor, Square
 } from 'lucide-react';
 import { PublicPresentationState } from '@/types';
 
@@ -25,6 +25,9 @@ const ICE_SERVERS: RTCConfiguration = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478' },
   ],
 };
 
@@ -48,6 +51,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
   const streamRef = useRef<MediaStream | null>(null);
   const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const pendingCandidatesMapRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
   // Sync when server slide state updates
   useEffect(() => {
@@ -139,6 +143,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
       } catch {}
     });
     peerConnectionsRef.current.clear();
+    pendingCandidatesMapRef.current.clear();
     setIsSharingScreen(false);
   }, []);
 
@@ -166,7 +171,6 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         audio: false,
       });
 
-      // Video track optimization for text sharpness and silky smooth motion
       const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
         if ('contentHint' in videoTrack) {
@@ -191,6 +195,56 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
     }
   };
 
+  // Real-Time Frame Relay Capture Loop (15 FPS, 720p HD)
+  useEffect(() => {
+    if (!isSharingScreen || !streamRef.current) return;
+
+    let animId: number;
+    let lastTime = 0;
+    const fpsInterval = 1000 / 15;
+
+    const hiddenVideo = document.createElement('video');
+    hiddenVideo.srcObject = streamRef.current;
+    hiddenVideo.muted = true;
+    hiddenVideo.playsInline = true;
+    hiddenVideo.play().catch(() => {});
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
+
+    const captureFrame = (time: number) => {
+      animId = requestAnimationFrame(captureFrame);
+
+      if (time - lastTime < fpsInterval) return;
+      lastTime = time;
+
+      if (hiddenVideo.readyState >= 2 && hiddenVideo.videoWidth > 0) {
+        const maxWidth = 1280;
+        const scale = Math.min(1, maxWidth / hiddenVideo.videoWidth);
+        const w = Math.round(hiddenVideo.videoWidth * scale);
+        const h = Math.round(hiddenVideo.videoHeight * scale);
+
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+
+        if (ctx) {
+          ctx.drawImage(hiddenVideo, 0, 0, w, h);
+          const frameData = canvas.toDataURL('image/jpeg', 0.72);
+          socket.emit('sendScreenFrame', { roomId: state.id, frame: frameData, token });
+        }
+      }
+    };
+
+    animId = requestAnimationFrame(captureFrame);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      hiddenVideo.srcObject = null;
+    };
+  }, [isSharingScreen, state.id, token]);
+
   // WebRTC Signaling Handlers (Relaying Screen Stream to Viewers)
   useEffect(() => {
     const handleViewerRequestStream = async ({ viewerSocketId }: { viewerSocketId: string }) => {
@@ -205,7 +259,6 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         const pc = new RTCPeerConnection(ICE_SERVERS);
         peerConnectionsRef.current.set(viewerSocketId, pc);
 
-        // Add all video tracks to peer connection
         streamRef.current.getTracks().forEach((track) => {
           pc.addTrack(track, streamRef.current!);
         });
@@ -226,6 +279,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
             pc.connectionState === 'closed'
           ) {
             peerConnectionsRef.current.delete(viewerSocketId);
+            pendingCandidatesMapRef.current.delete(viewerSocketId);
           }
         };
 
@@ -252,6 +306,17 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
       if (pc) {
         try {
           await pc.setRemoteDescription(new RTCSessionDescription(answer));
+
+          // Flush any buffered candidates for this viewer
+          const pending = pendingCandidatesMapRef.current.get(fromSocketId);
+          if (pending && pending.length > 0) {
+            while (pending.length > 0) {
+              const cand = pending.shift();
+              if (cand) {
+                await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {});
+              }
+            }
+          }
         } catch (err) {
           console.error('Failed to set remote description from answer:', err);
         }
@@ -272,6 +337,12 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         } catch (err) {
           console.error('Failed to add ICE candidate from viewer:', err);
         }
+      } else {
+        // Buffer candidate until remoteDescription is set
+        if (!pendingCandidatesMapRef.current.has(fromSocketId)) {
+          pendingCandidatesMapRef.current.set(fromSocketId, []);
+        }
+        pendingCandidatesMapRef.current.get(fromSocketId)!.push(candidate);
       }
     };
 
@@ -280,6 +351,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
       if (pc) {
         pc.close();
         peerConnectionsRef.current.delete(viewerSocketId);
+        pendingCandidatesMapRef.current.delete(viewerSocketId);
       }
     };
 
@@ -437,7 +509,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
                   <span className="tracking-wide">BROADCASTING YOUR SCREEN LIVE</span>
-                  <span className="text-slate-400 font-mono hidden sm:inline">(60 FPS Ultra-Low Latency)</span>
+                  <span className="text-slate-400 font-mono hidden sm:inline">(Ultra-Low Latency Dual-Stream)</span>
                 </div>
                 <button
                   type="button"
