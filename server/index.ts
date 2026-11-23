@@ -214,6 +214,7 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
         return callback({ success: false, error: 'Unauthorized admin token.' });
       }
       socket.data.role = 'ADMIN';
+      socket.data.adminToken = token;
       roomStore.updateAdminStatus(room.id, true);
       socket.join(room.id);
       io.to(room.id).emit('adminStatusChanged', { connected: true });

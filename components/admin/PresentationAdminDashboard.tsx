@@ -148,11 +148,17 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
     setIsSharingScreen(false);
   }, []);
 
+  // Effective Admin Token Helper
+  const getEffectiveToken = useCallback(() => {
+    return token || (typeof window !== 'undefined' ? sessionStorage.getItem(`lc_admin_token_${state.id}`) : '') || '';
+  }, [token, state.id]);
+
   // Stop Screen Share (Emits to Server)
   const handleStopScreenShare = useCallback(() => {
     stopScreenShareCleanup();
-    socket.emit('stopScreenShare', { roomId: state.id, token });
-  }, [state.id, token, stopScreenShareCleanup]);
+    const adminToken = getEffectiveToken();
+    socket.emit('stopScreenShare', { roomId: state.id, token: adminToken });
+  }, [state.id, getEffectiveToken, stopScreenShareCleanup]);
 
   // Create High-Bandwidth, Real-Time WebRTC Peer Connection for a Viewer
   const createPeerConnectionForViewer = useCallback(async (viewerSocketId: string) => {
@@ -224,16 +230,15 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
   const handleStartScreenShare = async () => {
     try {
       if (!navigator.mediaDevices?.getDisplayMedia) {
-        alert('Screen sharing is not supported on this browser or platform.');
+        alert('Screen sharing is supported on Desktop & Laptop browsers (Chrome, Edge, Safari, Firefox).');
         return;
       }
 
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
-          displaySurface: 'monitor',
           frameRate: { ideal: 60, max: 60 },
-          width: { ideal: 2560, max: 3840 },
-          height: { ideal: 1440, max: 2160 },
+          width: { ideal: 1920, max: 3840 },
+          height: { ideal: 1080, max: 2160 },
         } as any,
         audio: false,
       });
@@ -257,10 +262,17 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         videoPreviewRef.current.play().catch(() => {});
       }
 
+      const adminToken = getEffectiveToken();
       socket.emit(
         'startScreenShare',
-        { roomId: state.id, token },
-        (res?: { success: boolean; viewerSocketIds?: string[] }) => {
+        { roomId: state.id, token: adminToken },
+        (res?: { success: boolean; viewerSocketIds?: string[]; error?: string }) => {
+          if (res && !res.success) {
+            console.error('Failed to start screen share on server:', res.error);
+            alert(`Could not start screen share: ${res.error || 'Unauthorized'}`);
+            handleStopScreenShare();
+            return;
+          }
           // Immediately connect to all active viewers with zero delay
           if (res?.viewerSocketIds && res.viewerSocketIds.length > 0) {
             res.viewerSocketIds.forEach((viewerId) => {
@@ -311,7 +323,8 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
           ctx.drawImage(hiddenVideo, 0, 0, w, h);
           // High quality JPEG (0.85) ensures zero text blur
           const frameData = canvas.toDataURL('image/jpeg', 0.85);
-          socket.emit('sendScreenFrame', { roomId: state.id, frame: frameData, token });
+          const adminToken = getEffectiveToken();
+          socket.emit('sendScreenFrame', { roomId: state.id, frame: frameData, token: adminToken });
         }
       }
     };
