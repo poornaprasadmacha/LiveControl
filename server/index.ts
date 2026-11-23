@@ -230,6 +230,12 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
       socket.join(room.id);
       io.to(room.id).emit('viewerCountUpdated', { count });
       const publicState = getPublicRoomState(room, socket.id);
+
+      // If screen share is active, immediately connect WebRTC to this viewer with zero delay
+      if (room.isScreenSharing && room.screenShareSocketId) {
+        io.to(room.screenShareSocketId).emit('viewerRequestStream', { viewerSocketId: socket.id });
+      }
+
       return callback({ success: true, state: publicState });
     }
 
@@ -300,15 +306,22 @@ io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
   });
 
   // 5.1 Presentation Controls: Start Ultra-Low Latency Screen Share
-  socket.on('startScreenShare', ({ roomId, token }) => {
+  socket.on('startScreenShare', ({ roomId, token }, callback) => {
     const adminToken = token || socket.data.adminToken;
-    if (!verifyAdmin(roomId, adminToken)) return;
+    if (!verifyAdmin(roomId, adminToken)) {
+      if (callback) callback({ success: false, error: 'Unauthorized' });
+      return;
+    }
 
     const room = roomStore.setScreenShare(roomId, true, socket.id);
     if (room) {
       console.log(`📺 Admin started Screen Share in room ${roomId} (admin socket: ${socket.id})`);
+      const viewerSocketIds = Object.keys(room.viewers);
       io.to(roomId).emit('screenShareStarted', { adminSocketId: socket.id });
       broadcastRoomState(roomId);
+      if (callback) {
+        callback({ success: true, viewerSocketIds });
+      }
     }
   });
 

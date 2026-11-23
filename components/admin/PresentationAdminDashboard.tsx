@@ -25,10 +25,11 @@ const ICE_SERVERS: RTCConfiguration = {
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
-    { urls: 'stun:global.stun.twilio.com:3478' },
+    { urls: 'stun:stun.cloudflare.com:3478' },
   ],
+  iceCandidatePoolSize: 10,
+  bundlePolicy: 'max-bundle',
+  rtcpMuxPolicy: 'require',
 };
 
 export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProps> = ({
@@ -153,7 +154,73 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
     socket.emit('stopScreenShare', { roomId: state.id, token });
   }, [state.id, token, stopScreenShareCleanup]);
 
-  // Start Screen Share (High-performance 60 FPS, Low Latency)
+  // Create High-Bandwidth, Real-Time WebRTC Peer Connection for a Viewer
+  const createPeerConnectionForViewer = useCallback(async (viewerSocketId: string) => {
+    if (!streamRef.current) return;
+    try {
+      const existingPc = peerConnectionsRef.current.get(viewerSocketId);
+      if (existingPc) {
+        existingPc.close();
+      }
+
+      const pc = new RTCPeerConnection(ICE_SERVERS);
+      peerConnectionsRef.current.set(viewerSocketId, pc);
+
+      // Add all tracks with High-Performance parameters
+      streamRef.current.getTracks().forEach((track) => {
+        const sender = pc.addTrack(track, streamRef.current!);
+        try {
+          const params = sender.getParameters();
+          if (params) {
+            if (!params.encodings || params.encodings.length === 0) {
+              params.encodings = [{}];
+            }
+            params.encodings[0].maxBitrate = 12_000_000; // 12 Mbps for razor-sharp presentation text
+            params.encodings[0].maxFramerate = 60; // 60 FPS ultra-smooth motion
+            (params as any).degradationPreference = 'maintain-resolution';
+            sender.setParameters(params).catch(() => {});
+          }
+        } catch (e) {}
+      });
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit('sendScreenIceCandidate', {
+            targetSocketId: viewerSocketId,
+            candidate: event.candidate,
+          });
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        if (
+          pc.connectionState === 'disconnected' ||
+          pc.connectionState === 'failed' ||
+          pc.connectionState === 'closed'
+        ) {
+          peerConnectionsRef.current.delete(viewerSocketId);
+          pendingCandidatesMapRef.current.delete(viewerSocketId);
+        }
+      };
+
+      const offer = await pc.createOffer();
+      // Inject high-bandwidth b=AS:12000 in video SDP for crystal clarity
+      let modifiedSdp = offer.sdp || '';
+      if (!modifiedSdp.includes('b=AS:')) {
+        modifiedSdp = modifiedSdp.replace(/(m=video .*\r?\n)/, '$1b=AS:12000\r\nb=TIAS:12000000\r\n');
+      }
+      await pc.setLocalDescription({ type: 'offer', sdp: modifiedSdp });
+
+      socket.emit('sendScreenOffer', {
+        targetSocketId: viewerSocketId,
+        offer: { type: 'offer', sdp: modifiedSdp },
+      });
+    } catch (err) {
+      console.error('Failed to create screen offer for viewer:', viewerSocketId, err);
+    }
+  }, []);
+
+  // Start Screen Share (Google Meet Level Crisp Resolution & Real-time reflection)
   const handleStartScreenShare = async () => {
     try {
       if (!navigator.mediaDevices?.getDisplayMedia) {
@@ -163,18 +230,19 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
 
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
-          cursor: 'always',
-          frameRate: { ideal: 30, max: 60 },
-          width: { ideal: 1920, max: 2560 },
-          height: { ideal: 1080, max: 1440 },
+          displaySurface: 'monitor',
+          frameRate: { ideal: 60, max: 60 },
+          width: { ideal: 2560, max: 3840 },
+          height: { ideal: 1440, max: 2160 },
         } as any,
         audio: false,
       });
 
       const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
+        // 'detail' tells browser's encoder to preserve razor-sharp text and lines just like Google Meet
         if ('contentHint' in videoTrack) {
-          (videoTrack as any).contentHint = 'motion';
+          (videoTrack as any).contentHint = 'detail';
         }
         videoTrack.onended = () => {
           handleStopScreenShare();
@@ -189,19 +257,30 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         videoPreviewRef.current.play().catch(() => {});
       }
 
-      socket.emit('startScreenShare', { roomId: state.id, token });
+      socket.emit(
+        'startScreenShare',
+        { roomId: state.id, token },
+        (res?: { success: boolean; viewerSocketIds?: string[] }) => {
+          // Immediately connect to all active viewers with zero delay
+          if (res?.viewerSocketIds && res.viewerSocketIds.length > 0) {
+            res.viewerSocketIds.forEach((viewerId) => {
+              createPeerConnectionForViewer(viewerId);
+            });
+          }
+        }
+      );
     } catch (err: any) {
       console.log('Screen sharing cancelled or permission denied:', err);
     }
   };
 
-  // Real-Time Frame Relay Capture Loop (15 FPS, 720p HD)
+  // High-Quality Frame Relay Fallback (Provides instant preview without bottlenecking CPU)
   useEffect(() => {
     if (!isSharingScreen || !streamRef.current) return;
 
     let animId: number;
     let lastTime = 0;
-    const fpsInterval = 1000 / 15;
+    const fpsInterval = 1000 / 10; // 10 FPS lightweight fallback
 
     const hiddenVideo = document.createElement('video');
     hiddenVideo.srcObject = streamRef.current;
@@ -219,10 +298,9 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
       lastTime = time;
 
       if (hiddenVideo.readyState >= 2 && hiddenVideo.videoWidth > 0) {
-        const maxWidth = 1280;
-        const scale = Math.min(1, maxWidth / hiddenVideo.videoWidth);
-        const w = Math.round(hiddenVideo.videoWidth * scale);
-        const h = Math.round(hiddenVideo.videoHeight * scale);
+        // Full resolution preservation for sharp text
+        const w = hiddenVideo.videoWidth;
+        const h = hiddenVideo.videoHeight;
 
         if (canvas.width !== w || canvas.height !== h) {
           canvas.width = w;
@@ -231,7 +309,8 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
 
         if (ctx) {
           ctx.drawImage(hiddenVideo, 0, 0, w, h);
-          const frameData = canvas.toDataURL('image/jpeg', 0.72);
+          // High quality JPEG (0.85) ensures zero text blur
+          const frameData = canvas.toDataURL('image/jpeg', 0.85);
           socket.emit('sendScreenFrame', { roomId: state.id, frame: frameData, token });
         }
       }
@@ -248,51 +327,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
   // WebRTC Signaling Handlers (Relaying Screen Stream to Viewers)
   useEffect(() => {
     const handleViewerRequestStream = async ({ viewerSocketId }: { viewerSocketId: string }) => {
-      if (!streamRef.current) return;
-
-      try {
-        const existingPc = peerConnectionsRef.current.get(viewerSocketId);
-        if (existingPc) {
-          existingPc.close();
-        }
-
-        const pc = new RTCPeerConnection(ICE_SERVERS);
-        peerConnectionsRef.current.set(viewerSocketId, pc);
-
-        streamRef.current.getTracks().forEach((track) => {
-          pc.addTrack(track, streamRef.current!);
-        });
-
-        pc.onicecandidate = (event) => {
-          if (event.candidate) {
-            socket.emit('sendScreenIceCandidate', {
-              targetSocketId: viewerSocketId,
-              candidate: event.candidate,
-            });
-          }
-        };
-
-        pc.onconnectionstatechange = () => {
-          if (
-            pc.connectionState === 'disconnected' ||
-            pc.connectionState === 'failed' ||
-            pc.connectionState === 'closed'
-          ) {
-            peerConnectionsRef.current.delete(viewerSocketId);
-            pendingCandidatesMapRef.current.delete(viewerSocketId);
-          }
-        };
-
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-
-        socket.emit('sendScreenOffer', {
-          targetSocketId: viewerSocketId,
-          offer,
-        });
-      } catch (err) {
-        console.error('Failed to create screen offer for viewer:', viewerSocketId, err);
-      }
+      createPeerConnectionForViewer(viewerSocketId);
     };
 
     const handleScreenAnswer = async ({
@@ -338,7 +373,6 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
           console.error('Failed to add ICE candidate from viewer:', err);
         }
       } else {
-        // Buffer candidate until remoteDescription is set
         if (!pendingCandidatesMapRef.current.has(fromSocketId)) {
           pendingCandidatesMapRef.current.set(fromSocketId, []);
         }
@@ -366,7 +400,7 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
       socket.off('screenIceCandidate', handleScreenIceCandidate);
       socket.off('viewerLeftStream', handleViewerLeftStream);
     };
-  }, []);
+  }, [createPeerConnectionForViewer]);
 
   // Make sure videoPreviewRef stays synced when stream is active
   useEffect(() => {
@@ -501,6 +535,10 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
                   playsInline
                   muted
                   className="w-full h-full max-h-[82dvh] object-contain rounded-xl select-none"
+                  style={{
+                    imageRendering: '-webkit-optimize-contrast',
+                    transform: 'translateZ(0)',
+                  }}
                 />
               </div>
 
@@ -508,8 +546,8 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
               <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-white z-10 shrink-0">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                  <span className="tracking-wide">BROADCASTING YOUR SCREEN LIVE</span>
-                  <span className="text-slate-400 font-mono hidden sm:inline">(Ultra-Low Latency Dual-Stream)</span>
+                  <span className="tracking-wide">BROADCASTING SCREEN LIVE</span>
+                  <span className="text-emerald-400 font-mono hidden sm:inline">(Ultra-HD 60 FPS • Real-Time Reflection)</span>
                 </div>
                 <button
                   type="button"

@@ -115,7 +115,10 @@ export interface ClientToServerEvents {
   stopVoiceBroadcast: (data: { roomId: string }) => void;
 
   // Real-Time WebRTC Ultra-Low Latency Screen Share Handlers
-  startScreenShare: (data: { roomId: string; token: string }) => void;
+  startScreenShare: (
+    data: { roomId: string; token: string },
+    callback?: (res: { success: boolean; viewerSocketIds?: string[]; error?: string }) => void
+  ) => void;
   stopScreenShare: (data: { roomId: string; token: string }) => void;
   requestScreenStream: (data: { roomId: string }) => void;
   sendScreenOffer: (data: { targetSocketId: string; offer: any }) => void;
