@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { SlideViewer } from '../presentation/SlideViewer';
-import { getSlidesByTitle } from '@/lib/samplePresentation';
+import { getSlidesByTitle, isWidescreenPresentation } from '@/lib/samplePresentation';
 import { EndSessionModal } from './EndSessionModal';
 import { ShareModal } from '../shared/ShareModal';
 import { 
@@ -180,12 +180,16 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
       */}
       <main className="flex-1 w-full flex items-center justify-center relative p-0 sm:p-4 overflow-hidden">
         
-        {/* The Exact User Vertical Slide View */}
-        <div className="w-full h-full sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16] flex flex-col justify-center relative">
+        {/* The Exact Slide View: Responsive 16:9 on Desktop for Horizontal PPT, Vertical 9:16 for Mobile/Vertical Decks */}
+        <div className={`w-full h-full ${
+          isWidescreenPresentation(state?.title, slides)
+            ? 'sm:h-auto sm:max-w-5xl md:max-w-6xl lg:max-w-7xl sm:aspect-[16/9] px-0 sm:px-4' 
+            : 'sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16]'
+        } flex flex-col justify-center relative`}>
           <SlideViewer 
             currentSlide={localSlide} 
             isBlank={Boolean(state?.isBlank)}
-            presentationTitle={state?.title || 'Priority Bible Study'}
+            presentationTitle={state?.title || 'SQL Workshop'}
             slides={slides}
             className="h-full rounded-none sm:rounded-3xl border-0 sm:border border-slate-200"
           />

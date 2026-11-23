@@ -151,6 +151,17 @@ export default function CreateSessionPage() {
                 <div className="flex flex-wrap gap-2 pt-1">
                   <button
                     type="button"
+                    onClick={() => setTitle('SQL Workshop')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      title.toLowerCase().includes('sql')
+                        ? 'bg-slate-200 dark:bg-slate-700 border-slate-400 dark:border-slate-500 text-slate-900 dark:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    SQL Workshop (28 Slides)
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setTitle('Priority Bible Study')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                       title === 'Priority Bible Study'

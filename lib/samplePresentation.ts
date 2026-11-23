@@ -17,6 +17,7 @@ export interface SlideContent {
   englishText?: string;
   expectedAnswer?: string;
   imageUrl?: string;
+  aspectRatio?: string;
   pinnedScripture?: PinnedScripture;
   leftColumn?: { title: string; items: string[] };
   rightColumn?: { title: string; items: string[] };
@@ -45,9 +46,10 @@ export const JAMES_SCRIPTURE_REFERENCE: PinnedScripture = {
   ],
 };
 
+export const SQL_WORKSHOP_TITLE = 'SQL Workshop';
 export const PRIORITY_BIBLE_STUDY_TITLE = 'Priority Bible Study';
 export const AI_PRESENTATION_TITLE = 'Introduction to Artificial Intelligence';
-export const SAMPLE_PRESENTATION_TITLE = PRIORITY_BIBLE_STUDY_TITLE;
+export const SAMPLE_PRESENTATION_TITLE = SQL_WORKSHOP_TITLE;
 
 export const PRIORITY_BIBLE_STUDY_SLIDES: SlideContent[] = [
   {
@@ -506,7 +508,279 @@ export const AI_PRESENTATION_SLIDES: SlideContent[] = [
   },
 ];
 
+export const SQL_WORKSHOP_SLIDES: SlideContent[] = [
+  {
+    id: 1,
+    type: 'image',
+    title: 'SQL 1 Hour Workshop',
+    subtitle: 'Poorna Prasad — Online Mode',
+    imageUrl: '/slides/sql-workshop/slide-1.jpg',
+    aspectRatio: '16/9',
+    badge: 'SQL Workshop',
+  },
+  {
+    id: 2,
+    type: 'image',
+    title: 'Taj Mahal of the South',
+    subtitle: 'It has 3,93,532 documents',
+    imageUrl: '/slides/sql-workshop/slide-2.jpg',
+    aspectRatio: '16/9',
+    badge: 'Introduction',
+  },
+  {
+    id: 3,
+    type: 'image',
+    title: 'The Power of Your Subconscious Mind',
+    subtitle: 'Searching for a specific book in a massive library',
+    imageUrl: '/slides/sql-workshop/slide-3.jpg',
+    aspectRatio: '16/9',
+    badge: 'Real-World Need',
+  },
+  {
+    id: 4,
+    type: 'image',
+    title: 'Asking the Librarian',
+    subtitle: 'Where is "The Power of Subconscious Mind Book"?',
+    imageUrl: '/slides/sql-workshop/slide-4.jpg',
+    aspectRatio: '16/9',
+    badge: 'Scenario',
+  },
+  {
+    id: 5,
+    type: 'image',
+    title: 'Table Name: BooksPlace',
+    subtitle: 'Structured tabular data: BookName, Author, YearOfPublishing, Place',
+    imageUrl: '/slides/sql-workshop/slide-5.jpg',
+    aspectRatio: '16/9',
+    badge: 'Database Table',
+  },
+  {
+    id: 6,
+    type: 'image',
+    title: 'SQL Query for Location',
+    subtitle: 'SELECT Place FROM BooksPlace WHERE BookName = "The Power of Subconscious mind"',
+    imageUrl: '/slides/sql-workshop/slide-6.jpg',
+    aspectRatio: '16/9',
+    badge: 'First SQL Query',
+  },
+  {
+    id: 7,
+    type: 'image',
+    title: 'Finding the Book',
+    subtitle: 'Target found: I Floor, 1 Aisle, 2 Shelf',
+    imageUrl: '/slides/sql-workshop/slide-7.jpg',
+    aspectRatio: '16/9',
+    badge: 'Result',
+  },
+  {
+    id: 8,
+    type: 'image',
+    title: 'Structured Query Language (SQL)',
+    subtitle: 'S - Structured | Q - Query | L - Language',
+    imageUrl: '/slides/sql-workshop/slide-8.jpg',
+    aspectRatio: '16/9',
+    badge: 'Definition',
+  },
+  {
+    id: 9,
+    type: 'image',
+    title: 'SELECT Specific Column',
+    subtitle: 'SELECT FirstName FROM Students;',
+    imageUrl: '/slides/sql-workshop/slide-9.jpg',
+    aspectRatio: '16/9',
+    badge: 'SELECT Statement',
+  },
+  {
+    id: 10,
+    type: 'image',
+    title: 'SELECT All Columns (*)',
+    subtitle: 'SELECT * FROM Students;',
+    imageUrl: '/slides/sql-workshop/slide-10.jpg',
+    aspectRatio: '16/9',
+    badge: 'SELECT *',
+  },
+  {
+    id: 11,
+    type: 'image',
+    title: 'SELECT Multiple Columns',
+    subtitle: 'SELECT FirstName, Major FROM Students;',
+    imageUrl: '/slides/sql-workshop/slide-11.jpg',
+    aspectRatio: '16/9',
+    badge: 'Multiple Columns',
+  },
+  {
+    id: 12,
+    type: 'image',
+    title: 'The FROM Statement Explained',
+    subtitle: 'Tells the database which table to look in for the columns you selected',
+    imageUrl: '/slides/sql-workshop/slide-12.jpg',
+    aspectRatio: '16/9',
+    badge: 'Concept',
+  },
+  {
+    id: 13,
+    type: 'image',
+    title: 'Popular Database Systems',
+    subtitle: 'MySQL, PostgreSQL, Oracle, SQLite, MariaDB, Microsoft SQL Server',
+    imageUrl: '/slides/sql-workshop/slide-13.jpg',
+    aspectRatio: '16/9',
+    badge: 'RDBMS',
+  },
+  {
+    id: 14,
+    type: 'image',
+    title: 'Practice: Retrieve Major',
+    subtitle: 'SELECT Major FROM Students;',
+    imageUrl: '/slides/sql-workshop/slide-14.jpg',
+    aspectRatio: '16/9',
+    badge: 'Practice',
+  },
+  {
+    id: 15,
+    type: 'image',
+    title: 'The WHERE Clause (How to filter)',
+    subtitle: "SELECT * FROM Students WHERE Major = 'CS';",
+    imageUrl: '/slides/sql-workshop/slide-15.jpg',
+    aspectRatio: '16/9',
+    badge: 'Filtering',
+  },
+  {
+    id: 16,
+    type: 'image',
+    title: 'WHERE Filtered Output',
+    subtitle: 'Returns rows matching the exact condition',
+    imageUrl: '/slides/sql-workshop/slide-16.jpg',
+    aspectRatio: '16/9',
+    badge: 'WHERE Clause',
+  },
+  {
+    id: 17,
+    type: 'image',
+    title: 'Your Turn: Comparison Operators',
+    subtitle: 'SELECT FirstName, Major FROM Students WHERE Age > 21;',
+    imageUrl: '/slides/sql-workshop/slide-17.jpg',
+    aspectRatio: '16/9',
+    badge: 'Exercise',
+  },
+  {
+    id: 18,
+    type: 'image',
+    title: 'SQL Syntax Order Rule',
+    subtitle: 'The WHERE clause always comes after the FROM clause',
+    imageUrl: '/slides/sql-workshop/slide-18.jpg',
+    aspectRatio: '16/9',
+    badge: 'Syntax Rule',
+  },
+  {
+    id: 19,
+    type: 'image',
+    title: 'WHERE clause using AND and OR',
+    subtitle: "SELECT * FROM Students WHERE Major = 'CS' AND Age > 21;",
+    imageUrl: '/slides/sql-workshop/slide-19.jpg',
+    aspectRatio: '16/9',
+    badge: 'Logical Operators',
+  },
+  {
+    id: 20,
+    type: 'image',
+    title: 'AND vs OR Logic',
+    subtitle: 'AND: All conditions must be true | OR: At least one condition must be true',
+    imageUrl: '/slides/sql-workshop/slide-20.jpg',
+    aspectRatio: '16/9',
+    badge: 'Core Concept',
+  },
+  {
+    id: 21,
+    type: 'image',
+    title: 'Your Turn: Using the OR Operator',
+    subtitle: "SELECT FirstName, Age FROM Students WHERE Major = 'Mech' or Age = 20;",
+    imageUrl: '/slides/sql-workshop/slide-21.jpg',
+    aspectRatio: '16/9',
+    badge: 'Exercise',
+  },
+  {
+    id: 22,
+    type: 'image',
+    title: 'OR Query Result',
+    subtitle: 'Displays rows matching either condition',
+    imageUrl: '/slides/sql-workshop/slide-22.jpg',
+    aspectRatio: '16/9',
+    badge: 'Result',
+  },
+  {
+    id: 23,
+    type: 'image',
+    title: 'The IN Operator vs Multiple ORs',
+    subtitle: "SELECT * FROM Students WHERE Major IN ('CS', 'ECE');",
+    imageUrl: '/slides/sql-workshop/slide-23.jpg',
+    aspectRatio: '16/9',
+    badge: 'IN Operator',
+  },
+  {
+    id: 24,
+    type: 'image',
+    title: 'Sorting Data: ORDER BY',
+    subtitle: 'SELECT * FROM Students ORDER BY FirstName;',
+    imageUrl: '/slides/sql-workshop/slide-24.jpg',
+    aspectRatio: '16/9',
+    badge: 'ORDER BY',
+  },
+  {
+    id: 25,
+    type: 'image',
+    title: 'Descending Order: ORDER BY DESC',
+    subtitle: 'SELECT * FROM Students ORDER BY FirstName DESC;',
+    imageUrl: '/slides/sql-workshop/slide-25.jpg',
+    aspectRatio: '16/9',
+    badge: 'Sorting',
+  },
+  {
+    id: 26,
+    type: 'image',
+    title: 'Limiting Results: LIMIT',
+    subtitle: 'SELECT FirstName, Age FROM Students ORDER BY Age LIMIT 2;',
+    imageUrl: '/slides/sql-workshop/slide-26.jpg',
+    aspectRatio: '16/9',
+    badge: 'LIMIT',
+  },
+  {
+    id: 27,
+    type: 'image',
+    title: 'Workshop Summary & Discussion',
+    subtitle: 'Key Takeaways & Recap',
+    imageUrl: '/slides/sql-workshop/slide-27.jpg',
+    aspectRatio: '16/9',
+    badge: 'Recap',
+  },
+  {
+    id: 28,
+    type: 'image',
+    title: 'Thank You!',
+    subtitle: 'Poorna Prasad — SQL 1 Hour Workshop',
+    imageUrl: '/slides/sql-workshop/slide-28.jpg',
+    aspectRatio: '16/9',
+    badge: 'Conclusion',
+  },
+];
+
+export function isWidescreenPresentation(title?: string, slides?: SlideContent[]): boolean {
+  if (title) {
+    const lower = title.toLowerCase();
+    if (lower.includes('sql') || lower.includes('workshop')) return true;
+  }
+  if (slides && slides.length > 0) {
+    if (slides[0]?.aspectRatio === '16/9') return true;
+    if (slides.some(s => s.imageUrl?.includes('sql-workshop'))) return true;
+  }
+  return false;
+}
+
 export const PRESENTATION_DECKS: Record<string, { id: string; title: string; slides: SlideContent[] }> = {
+  'sql-workshop': {
+    id: 'sql-workshop',
+    title: SQL_WORKSHOP_TITLE,
+    slides: SQL_WORKSHOP_SLIDES,
+  },
   'priority-bible-study': {
     id: 'priority-bible-study',
     title: PRIORITY_BIBLE_STUDY_TITLE,
@@ -520,12 +794,18 @@ export const PRESENTATION_DECKS: Record<string, { id: string; title: string; sli
 };
 
 export function getSlidesByTitle(title?: string): SlideContent[] {
-  if (!title) return PRIORITY_BIBLE_STUDY_SLIDES;
+  if (!title) return SQL_WORKSHOP_SLIDES;
   const lower = title.toLowerCase();
+  if (lower.includes('sql') || lower.includes('workshop')) {
+    return SQL_WORKSHOP_SLIDES;
+  }
   if (lower.includes('ai') || lower.includes('artificial')) {
     return AI_PRESENTATION_SLIDES;
   }
-  return PRIORITY_BIBLE_STUDY_SLIDES;
+  if (lower.includes('bible') || lower.includes('priority')) {
+    return PRIORITY_BIBLE_STUDY_SLIDES;
+  }
+  return SQL_WORKSHOP_SLIDES;
 }
 
-export const SAMPLE_SLIDES: SlideContent[] = PRIORITY_BIBLE_STUDY_SLIDES;
+export const SAMPLE_SLIDES: SlideContent[] = SQL_WORKSHOP_SLIDES;

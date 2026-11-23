@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SlideContent, getSlidesByTitle } from '@/lib/samplePresentation';
+import { SlideContent, getSlidesByTitle, isWidescreenPresentation } from '@/lib/samplePresentation';
 import { 
   Brain, Cpu, CheckCircle2, BookOpen, 
   ChevronDown, ChevronUp
@@ -165,9 +165,43 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
   const theme = getThemeForSlide(slide.id || 1);
 
+  const isWidescreen = isWidescreenPresentation(presentationTitle, slides);
+  const isPureImageSlide = Boolean(slide.imageUrl && !slide.content && !slide.englishText && !slide.teluguText && !slide.expectedAnswer);
+
   if (isBlank) {
     return (
       <div className={`w-full h-full min-h-[560px] bg-black rounded-3xl transition-all duration-300 ${className}`} />
+    );
+  }
+
+  // Pure PPT / PDF Widescreen Slide Image Render
+  if (isPureImageSlide) {
+    return (
+      <div className={`w-full h-full ${isWidescreen ? 'sm:aspect-[16/9] bg-white border-slate-200' : `${theme.cardBg} ${theme.borderColor} min-h-[560px]`} border rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col justify-between relative overflow-hidden transition-all duration-300 font-sans select-none ${className}`}>
+        {/* Full PPT Slide Image */}
+        <div className="flex-1 w-full h-full flex items-center justify-center my-auto overflow-hidden">
+          <img 
+            src={slide.imageUrl} 
+            alt={slide.title} 
+            loading="eager"
+            className="w-full h-full max-h-[82dvh] object-contain rounded-xl select-none"
+          />
+        </div>
+
+        {/* Minimal Bottom Progress Bar */}
+        <div className="pt-2 border-t border-black/5 z-10 shrink-0 space-y-1">
+          <div className="w-full bg-black/10 h-1.5 rounded-full overflow-hidden">
+            <div 
+              className={`${theme.accentBar} h-full transition-all duration-300 rounded-full`}
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+            <span>Slide {slideIndex + 1} of {totalSlides}</span>
+            <span className="font-mono text-slate-700">{progressPercent}%</span>
+          </div>
+        </div>
+      </div>
     );
   }
 

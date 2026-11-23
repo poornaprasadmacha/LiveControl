@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SlideViewer } from './SlideViewer';
 import { PublicPresentationState } from '@/types';
+import { isWidescreenPresentation } from '@/lib/samplePresentation';
 import { Maximize, Minimize } from 'lucide-react';
 
 interface PresentationViewerScreenProps {
@@ -123,12 +124,16 @@ export const PresentationViewerScreen: React.FC<PresentationViewerScreenProps> =
         {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
       </button>
 
-      {/* Vertical Presentation Container */}
-      <div className="w-full h-full sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16] flex flex-col justify-center">
+      {/* Presentation Container: Responsive 16:9 on Desktop for Horizontal PPT, Vertical 9:16 for Mobile/Vertical Decks */}
+      <div className={`w-full h-full ${
+        isWidescreenPresentation(state?.title)
+          ? 'sm:h-auto sm:max-w-5xl md:max-w-6xl lg:max-w-7xl sm:aspect-[16/9] px-0 sm:px-4' 
+          : 'sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16]'
+      } flex flex-col justify-center`}>
         <SlideViewer
           currentSlide={state?.currentSlide ?? 1}
           isBlank={Boolean(state?.isBlank)}
-          presentationTitle={state?.title || 'Priority Bible Study'}
+          presentationTitle={state?.title || 'SQL Workshop'}
           className="h-full rounded-none sm:rounded-3xl border-0 sm:border border-slate-200"
         />
       </div>
