@@ -20,6 +20,7 @@ export default function RoomPage() {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSessionEnded, setIsSessionEnded] = useState(false);
+  const lastSlideSeqRef = useRef<number>(0);
 
   useEffect(() => {
     if (!roomId) return;
@@ -50,8 +51,6 @@ export default function RoomPage() {
     const handleRoomState = (state: PublicRoomState) => {
       setRoomState(state);
     };
-
-    const lastSlideSeqRef = useRef<number>(0);
 
     const handleSlideChanged = (data: { currentSlide: number; isBlank: boolean; seq?: number }) => {
       // Discard any out-of-order stale packet to guarantee monotonic sequence

@@ -150,13 +150,20 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
   slides: customSlides
 }) => {
   const [isScriptureCollapsed, setIsScriptureCollapsed] = useState(false);
-  const slides = customSlides || getSlidesByTitle(presentationTitle);
-  const totalSlides = slides.length;
-  const slideIndex = Math.max(1, Math.min(currentSlide, totalSlides)) - 1;
-  const slide: SlideContent = slides[slideIndex] || slides[0];
+  const resolvedSlides = customSlides && customSlides.length > 0 ? customSlides : getSlidesByTitle(presentationTitle);
+  const slides = resolvedSlides && resolvedSlides.length > 0 ? resolvedSlides : getSlidesByTitle('Priority Bible Study');
+  const totalSlides = Math.max(1, slides.length);
+  const safeCurrentSlide = typeof currentSlide === 'number' && !isNaN(currentSlide) ? currentSlide : 1;
+  const slideIndex = Math.max(0, Math.min(safeCurrentSlide - 1, totalSlides - 1));
+  const slide: SlideContent = slides[slideIndex] || slides[0] || {
+    id: 1,
+    type: 'text',
+    title: presentationTitle || 'Priority Bible Study',
+    content: 'Welcome to the presentation.',
+  };
   const progressPercent = Math.round(((slideIndex + 1) / totalSlides) * 100);
 
-  const theme = getThemeForSlide(slide.id);
+  const theme = getThemeForSlide(slide.id || 1);
 
   if (isBlank) {
     return (

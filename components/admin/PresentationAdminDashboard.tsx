@@ -184,8 +184,8 @@ export const PresentationAdminDashboard: React.FC<PresentationAdminDashboardProp
         <div className="w-full h-full sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16] flex flex-col justify-center relative">
           <SlideViewer 
             currentSlide={localSlide} 
-            isBlank={state.isBlank}
-            presentationTitle={state.title}
+            isBlank={Boolean(state?.isBlank)}
+            presentationTitle={state?.title || 'Priority Bible Study'}
             slides={slides}
             className="h-full rounded-none sm:rounded-3xl border-0 sm:border border-slate-200"
           />

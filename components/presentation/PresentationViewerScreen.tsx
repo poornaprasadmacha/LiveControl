@@ -126,9 +126,9 @@ export const PresentationViewerScreen: React.FC<PresentationViewerScreenProps> =
       {/* Vertical Presentation Container */}
       <div className="w-full h-full sm:h-[94dvh] sm:max-w-md sm:aspect-[9/16] flex flex-col justify-center">
         <SlideViewer
-          currentSlide={state.currentSlide}
-          isBlank={state.isBlank}
-          presentationTitle={state.title}
+          currentSlide={state?.currentSlide ?? 1}
+          isBlank={Boolean(state?.isBlank)}
+          presentationTitle={state?.title || 'Priority Bible Study'}
           className="h-full rounded-none sm:rounded-3xl border-0 sm:border border-slate-200"
         />
       </div>
